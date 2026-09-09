@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Shaheen — Student Portal</title>
+<title>Shaheen — Create Assignment</title>
 <style>
 :root{
   --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
@@ -16,485 +16,838 @@
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
-button,input,textarea{font-family:inherit}
+button,input,textarea,select{font-family:inherit}
 
-.wrap{max-width:820px;margin:0 auto;padding:32px 20px 80px}
-.topbar{display:flex;align-items:center;gap:12px;margin-bottom:28px}
-.t-logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#14b8a6,#059669);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
-.t-title{font-size:17px;font-weight:700;color:var(--ink)}
-.t-sub{font-size:12px;color:var(--ink4)}
+/* Layout */
+.shell{display:flex;min-height:100vh}
+.sidebar{width:52px;background:var(--white);border-right:1px solid var(--line);display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:20px;flex-shrink:0}
+.s-logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#14b8a6,#059669);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.s-icon{width:34px;height:34px;border-radius:9px;background:var(--green-l);color:var(--green);display:flex;align-items:center;justify-content:center}
+.main{flex:1;display:flex;overflow:hidden}
+.content{flex:1;padding:28px 32px;overflow-y:auto;transition:opacity .15s}
+.content.dim{opacity:.35;pointer-events:none}
 
-/* Import */
-.import-card{background:var(--white);border:1.5px dashed var(--line);border-radius:var(--radius-lg);padding:56px 32px;text-align:center}
-.import-card h2{font-size:19px;font-weight:700;color:var(--ink);margin-bottom:8px}
-.import-card p{font-size:13px;color:var(--ink3);margin-bottom:24px;line-height:1.6}
-.file-label{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
-.file-label:hover{background:var(--blue-d)}
-input[type=file]{display:none}
-.err-box{background:var(--red-l);border:1px solid #fecaca;color:#b91c1c;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:14px}
+/* Panel */
+.panel{width:400px;background:var(--white);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:-6px 0 20px rgba(0,0,0,.06);flex-shrink:0;overflow-y:auto}
+.panel-top{padding:22px 24px 0;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.panel-top h2{font-size:17px;font-weight:700;color:var(--blue-d)}
+.close-btn{background:none;border:none;cursor:pointer;color:var(--ink4);padding:4px;display:flex;align-items:center;border-radius:6px}
+.close-btn:hover{background:var(--line2);color:var(--ink2)}
+.panel-body{padding:20px 24px;flex:1;display:flex;flex-direction:column;gap:18px}
 
-/* Quiz header */
-.quiz-hdr{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:18px}
-.quiz-hdr h2{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:3px}
-.quiz-hdr-meta{font-size:13px;color:var(--ink4)}
-.quiz-hdr-desc{font-size:13px;color:var(--ink3);margin-top:7px;line-height:1.5}
-.prog-bar{height:5px;background:var(--line);border-radius:99px;margin-top:14px;overflow:hidden}
-.prog-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .2s}
+/* Steps */
+.step-bars{display:flex;gap:6px;padding:0 24px;margin-top:14px}
+.step-bar{flex:1;height:4px;border-radius:99px;background:var(--line);transition:background .2s}
+.step-bar.on{background:var(--blue)}
 
-/* Question cards */
-.q-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:14px}
-.q-num{font-size:11px;color:var(--ink4);margin-bottom:3px}
-.q-kind{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
-.q-prompt{font-size:15px;font-weight:600;color:var(--ink);line-height:1.55;margin-bottom:16px}
+/* Fields */
+.field{display:flex;flex-direction:column;gap:6px}
+.field-label{font-size:11px;font-weight:600;color:var(--ink3);letter-spacing:.3px}
+input[type=text],textarea,select{width:100%;border:1px solid var(--line);border-radius:var(--radius);padding:10px 13px;font-size:14px;color:var(--ink);outline:none;transition:border-color .15s,box-shadow .15s;background:var(--white)}
+input[type=text]:focus,textarea:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+textarea{resize:vertical;min-height:80px}
 
-/* Options */
-.opt-btn{width:100%;text-align:left;display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--white);border-radius:10px;padding:11px 13px;font-size:14px;color:var(--ink2);cursor:pointer;margin-bottom:8px}
-.opt-btn:hover{border-color:var(--ink4)}
-.opt-btn.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d);font-weight:500}
-.opt-letter{width:22px;height:22px;border-radius:50%;background:var(--line2);color:var(--ink4);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.opt-btn.sel .opt-letter{background:var(--blue);color:#fff}
+/* Dropdown */
+.dd-btn{width:100%;display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:var(--radius);padding:10px 13px;font-size:14px;color:var(--ink);background:var(--white);cursor:pointer;transition:border-color .15s}
+.dd-btn:hover{border-color:var(--ink4)}
+.dd-list{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-top:4px}
+.dd-item{width:100%;display:flex;align-items:center;justify-content:space-between;padding:10px 13px;font-size:13px;background:var(--white);border:none;border-bottom:1px solid var(--line2);cursor:pointer;text-align:left;gap:10px}
+.dd-item:last-child{border-bottom:none}
+.dd-item:hover{background:var(--line2)}
+.dd-item.sel{background:#eff6ff88;color:var(--blue-d);font-weight:500}
 
-/* TF */
-.tf-row{display:flex;gap:10px}
-.tf-btn{flex:1;text-align:center;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--white);font-size:14px;font-weight:500;cursor:pointer}
-.tf-btn.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d)}
+/* Resource zone */
+.resource-box{border:1.5px dashed var(--line);border-radius:var(--radius-lg);padding:16px;display:flex;flex-direction:column;gap:12px}
+.resource-box.has{border-color:var(--green);border-style:solid;background:var(--green-l)}
+.upload-zone{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1.5px dashed var(--line);border-radius:var(--radius);padding:20px 12px;cursor:pointer;gap:6px;background:var(--line2);transition:border-color .15s,background .15s;position:relative;min-height:90px}
+.upload-zone:hover{border-color:var(--blue);background:var(--blue-l)}
+.upload-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.upload-zone-icon{font-size:22px}
+.upload-zone-label{font-size:12px;font-weight:600;color:var(--ink2)}
+.upload-zone-hint{font-size:11px;color:var(--ink4)}
+.upload-done{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--green-d)}
+.notes-toggle{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--blue);cursor:pointer;background:none;border:none;padding:0}
 
-/* Input */
-.ans-input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px;outline:none;transition:border-color .15s}
-.ans-input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
-textarea.ans-input{resize:vertical;min-height:90px}
+/* Type picker */
+.type-row{display:flex;align-items:center;justify-content:space-between;border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:var(--white);transition:border-color .15s,background .15s;gap:10px}
+.type-row.on{border-color:#93c5fd;background:var(--blue-l)}
+.type-row-left{display:flex;align-items:center;gap:10px;cursor:pointer;flex:1}
+.type-icon{width:30px;height:30px;border-radius:8px;background:var(--line2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.type-row.on .type-icon{background:var(--blue-l)}
+.type-name{font-size:13px;font-weight:500;color:var(--ink2)}
+.type-row.on .type-name{color:var(--blue-d);font-weight:600}
+.type-sub{font-size:11px;color:var(--ink4)}
+.stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--white)}
+.stepper button{width:26px;height:26px;border:none;background:none;color:var(--blue);font-size:15px;font-weight:700;cursor:pointer}
+.stepper button:hover{background:var(--blue-l)}
+.stepper span{width:28px;text-align:center;font-size:13px;font-weight:700;color:var(--ink);border-left:1px solid var(--line);border-right:1px solid var(--line)}
 
-/* Spot */
-.token-pill{display:inline-block;border:1px solid var(--line);background:var(--white);border-radius:7px;padding:6px 10px;font-size:14px;margin:3px;cursor:pointer}
-.token-pill.marked{border-color:var(--amber);background:var(--amber-l);color:#92400e;font-weight:600}
-.choice-row{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}
-.choice-btn{padding:9px 15px;border-radius:9px;border:1px solid var(--line);background:var(--white);font-size:13px;cursor:pointer}
-.choice-btn.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d);font-weight:500}
+/* Info chips */
+.chip{display:flex;align-items:flex-start;gap:8px;font-size:12px;border-radius:10px;padding:10px 12px}
+.chip.info{background:var(--blue-l);border:1px solid #bfdbfe;color:var(--blue-d)}
+.chip.success{background:var(--green-l);border:1px solid #a7f3d0;color:var(--green-d)}
+.chip.warn{background:var(--amber-l);border:1px solid #fde68a;color:#92400e}
+.chip.neutral{background:var(--line2);border:1px solid var(--line);color:var(--ink3)}
 
-/* Match */
-.match-grid{display:flex;gap:18px;margin-top:4px}
-.match-col{flex:1;display:flex;flex-direction:column;gap:7px}
-.match-item{border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px;cursor:pointer;background:var(--white);text-align:left}
-.match-item.pending{border-color:var(--blue);background:var(--blue-l)}
-.match-item.paired{border-color:var(--green);background:var(--green-l)}
-.pair-tag{font-size:10px;font-weight:700;color:#fff;background:var(--ink4);border-radius:99px;padding:1px 6px;margin-left:5px}
-
-/* Submit */
-.submit-bar{display:flex;justify-content:flex-end;margin-top:10px;gap:10px}
-.btn-primary{background:var(--blue);color:#fff;border:none;padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 18px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;border:none;transition:opacity .15s,background .15s}
+.btn-primary{background:var(--blue);color:#fff}
 .btn-primary:hover{background:var(--blue-d)}
-.btn-secondary{background:var(--white);color:var(--ink2);border:1px solid var(--line);padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary:disabled{background:#bfdbfe;color:#93c5fd;cursor:not-allowed}
+.btn-secondary{background:var(--white);color:var(--ink2);border:1px solid var(--line)}
 .btn-secondary:hover{background:var(--line2)}
+.btn-generate{background:linear-gradient(90deg,var(--blue),#14b8a6);color:#fff}
+.btn-generate:disabled{background:#bfdbfe;color:#93c5fd;cursor:not-allowed}
+.btn-row{display:flex;justify-content:flex-end;gap:10px;margin-top:auto;padding-top:8px}
+.btn-row.spread{justify-content:space-between}
 
-/* Results */
-.score-banner{background:linear-gradient(135deg,var(--blue-d),#0f766e);border-radius:var(--radius-lg);padding:28px 24px;text-align:center;color:#fff;margin-bottom:20px}
-.score-num{font-size:48px;font-weight:800;line-height:1}
-.score-label{font-size:13px;opacity:.75;margin-top:5px}
-.result-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--line);border-left:4px solid var(--line);padding:14px 18px;margin-bottom:10px}
-.result-card.correct{border-left-color:var(--green)}
-.result-card.incorrect{border-left-color:var(--red)}
-.result-card.pending{border-left-color:var(--ink4)}
-.result-card.partial{border-left-color:var(--amber)}
-.result-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
-.result-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
-.result-tag.correct{background:var(--green-l);color:var(--green-d)}
-.result-tag.incorrect{background:var(--red-l);color:#991b1b}
-.result-tag.pending{background:var(--line2);color:var(--ink3)}
-.result-tag.partial{background:var(--amber-l);color:#92400e}
-.teacher-bar{display:flex;align-items:center;justify-content:space-between;background:#1e293b;color:#fff;border-radius:12px;padding:10px 16px;margin-bottom:16px;font-size:13px}
-.teacher-bar-label{display:flex;align-items:center;gap:8px;font-weight:600}
-.teacher-hint{font-size:11px;color:#94a3b8}
-.toggle-wrap{display:flex;align-items:center;gap:8px}
-.toggle{width:40px;height:22px;border-radius:99px;background:#475569;border:none;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
-.toggle.on{background:#10b981}
-.toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:3px;left:3px;transition:left .2s}
-.toggle.on::after{left:21px}
-.override-btn{font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;border:none;cursor:pointer;margin-left:8px;transition:all .15s}
-.override-btn.mark-correct{background:#dcfce7;color:#166534}
-.override-btn.mark-correct:hover{background:#bbf7d0}
-.override-btn.unmark{background:#fee2e2;color:#991b1b}
-.override-btn.unmark:hover{background:#fecaca}
-.result-detail{font-size:12px;color:var(--ink3);margin-top:5px}
-.result-extra{font-size:12px;color:#991b1b;margin-top:5px;padding:7px 10px;background:var(--red-l);border-radius:8px;line-height:1.6}
-.result-card.correct .result-extra{color:var(--green-d);background:var(--green-l)}
-.result-card.pending .result-extra{color:var(--ink3);background:var(--line2)}
+/* Generating */
+.gen-center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:40px 0}
+.spin-ring{width:44px;height:44px;border:3px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Review screen */
+.review-wrap{max-width:1100px}
+.review-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.review-header h1{font-size:20px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.review-meta{font-size:13px;color:var(--ink4)}
+.review-banner{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink3);background:var(--green-l);border:1px solid #a7f3d0;border-radius:10px;padding:10px 13px;margin-bottom:20px}
+.q-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:14px}
+.q-card{background:var(--white);border-radius:var(--radius-lg);border:1px solid var(--line);padding:18px 20px}
+.q-card-full{grid-column:1/-1}
+.q-head{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.q-tag{font-size:11px;font-weight:700;color:var(--blue);flex-shrink:0;margin-top:5px;line-height:1.3;text-align:center}
+.q-textarea{flex:1;border:1px solid transparent;border-radius:8px;padding:5px 8px;margin:-5px -8px;font-size:14px;font-weight:500;color:var(--ink);resize:none;font-family:inherit;line-height:1.5;background:transparent}
+.q-textarea:hover{border-color:var(--line)}
+.q-textarea:focus{border-color:#93c5fd;outline:none;background:var(--white)}
+.rm-btn{background:none;border:none;cursor:pointer;color:var(--line);margin-top:3px;display:flex}
+.rm-btn:hover{color:var(--red)}
+.opt-list{display:flex;flex-direction:column;gap:7px;padding-left:26px}
+.opt-row{display:flex;align-items:center;gap:9px;border:1px solid var(--line);border-radius:9px;padding:8px 11px;cursor:pointer}
+.opt-row.correct{border-color:#6ee7b7;background:var(--green-l)}
+.opt-text{flex:1;border:none;background:transparent;font-size:13px;color:var(--ink2);font-family:inherit;outline:none}
+.correct-tag{font-size:10px;font-weight:700;color:var(--green)}
+.desc-note{padding-left:26px;font-size:12px;color:var(--ink4)}
+.review-actions{display:flex;justify-content:flex-end;gap:12px;margin-top:20px}
+
+/* Assignments list */
+.list-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.list-header h1{font-size:20px;font-weight:700;color:var(--ink)}
+.a-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:14px}
+.a-card-title{font-size:14px;font-weight:600;color:var(--ink)}
+.a-card-meta{font-size:12px;color:var(--ink4);margin-top:3px}
+.badge-pub{font-size:11px;font-weight:700;color:var(--green);background:var(--green-l);border:1px solid #a7f3d0;padding:3px 10px;border-radius:99px}
+.empty-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);height:220px;display:flex;align-items:center;justify-content:center;color:var(--ink4);font-size:14px}
+
+/* Toast */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(12px);background:var(--ink);color:#fff;padding:11px 18px;border-radius:12px;font-size:13px;font-weight:500;display:flex;align-items:center;gap:9px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:100}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.scroll-area{max-height:260px;overflow-y:auto;display:flex;flex-direction:column;gap:7px;padding-right:2px}
+.review-result-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);padding:18px 20px;margin-bottom:12px}
+.rr-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:10px}
+.rr-q-num{font-size:11px;color:var(--ink4)}
+.rr-kind{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.04em}
+.rr-question{font-size:14px;font-weight:600;color:var(--ink);line-height:1.5;margin:4px 0 10px}
+.rr-answer-row{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:6px}
+.rr-label{font-size:11px;font-weight:600;color:var(--ink4);width:100px;flex-shrink:0}
+.rr-value{font-size:13px;color:var(--ink2);font-weight:500}
+.status-tag{font-size:11px;font-weight:700;padding:2px 9px;border-radius:99px;display:inline-flex;align-items:center;gap:4px}
+.status-tag.correct{background:var(--green-l);color:var(--green-d)}
+.status-tag.incorrect{background:var(--red-l);color:#991b1b}
+.status-tag.partial{background:var(--amber-l);color:#92400e}
+.status-tag.pending{background:var(--line2);color:var(--ink3)}
+.status-tag.override{background:#ede9fe;color:#5b21b6}
+.override-row{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--line2)}
+.ov-btn{padding:5px 14px;border-radius:99px;border:none;cursor:pointer;font-size:12px;font-weight:700;transition:all .15s}
+.ov-btn.mark-correct{background:var(--green-l);color:var(--green-d)}
+.ov-btn.mark-correct:hover{background:#a7f3d0}
+.ov-btn.mark-incorrect{background:var(--red-l);color:#991b1b}
+.ov-btn.mark-incorrect:hover{background:#fecaca}
+.ov-btn.undo{background:var(--line2);color:var(--ink2)}
+.ov-btn.undo:hover{background:var(--line)}
+.result-import-zone{border:1.5px dashed var(--line);border-radius:var(--radius-lg);padding:28px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative}
+.result-import-zone:hover{border-color:var(--blue);background:var(--blue-l)}
+.result-import-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
 </style>
 </head>
 <body>
-<div id="app"></div>
+<div class="shell">
+  <div class="sidebar">
+    <div class="s-logo">S</div>
+    <div class="s-icon">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    </div>
+  </div>
+  <div class="main">
+    <div class="content" id="content"></div>
+    <div id="panel-wrap"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
 <script>
-const KIND_LABELS={mcq:'Multiple Choice',tf:'True / False',fillblank:'Fill in the Blank',oneword:'One-word / One-line',spotmistake:'Spot the Mistake',match:'Match the Following',descriptive:'Descriptive'};
+// ── CONFIG ────────────────────────────────────────────────────────────────
+const GEMINI_API_KEY = window.GEMINI_API_KEY || '__GEMINI_KEY__';
 
-let S={quiz:null,answers:{},screen:'import',error:null,teacherMode:false,overrides:{}};
+// ── DATA ─────────────────────────────────────────────────────────────────
+const BATCHES = [
+  {id:'b1',name:'Class 6 – Section A',students:34},
+  {id:'b2',name:'Class 6 – Section B',students:31},
+  {id:'b3',name:'Class 7 – Section A',students:29},
+  {id:'b4',name:'Class 8 – Morning Batch',students:27},
+];
 
+const TYPES = [
+  {id:'mcq',   label:'Multiple Choice',  sub:'Auto-graded',               icon:'☑'},
+  {id:'tf',    label:'True / False',     sub:'Quick daily check',          icon:'⚖'},
+  {id:'fillblank',label:'Fill in the Blank',sub:'Recall key terms',        icon:'✏'},
+  {id:'oneword',label:'One-word / One-line',sub:'Fastest pulse check',     icon:'⚡'},
+  {id:'spotmistake',label:'Spot the Mistake',sub:'Find the wrong word',    icon:'🔍'},
+  {id:'match', label:'Match the Following',sub:'Column-I vs Column-II with 4 MCQ combos', icon:'🔗',min:3},
+  {id:'descriptive',label:'Descriptive',sub:'Written answers',             icon:'📝'},
+];
+
+// ── STATE ────────────────────────────────────────────────────────────────
+let S = {
+  step: 1,
+  batchId: null, batchOpen: false,
+  title: '', description: '',
+  resourceFile: null, resourceB64: null, resourceMime: null, resourceName: null,
+  notes: '', showNotes: false,
+  counts: {},
+  prompt: '',
+  questions: [],
+  assignments: [],
+  toast: null,
+  generating: false,
+  genError: null,
+  // Teacher result review
+  resultReview: null,   // loaded student result JSON
+  overrides: {},        // { questionId: 'correct' | 'incorrect' | null }
+  showReview: false,
+};
+
+function batch(){ return BATCHES.find(b=>b.id===S.batchId)||null; }
+function hasResource(){ return S.resourceB64 || S.notes.trim(); }
+function canStep1(){ return !!S.batchId; }
+function canStep2(){ return S.title.trim().length > 0 && hasResource(); }
+function canStep3(){ return Object.values(S.counts).some(v=>v>0); }
+function totalQ(){ return Object.values(S.counts).reduce((a,b)=>a+b,0); }
+function selectedTypes(){ return TYPES.filter(t=>(S.counts[t.id]||0)>0); }
+
+// ── ICONS (inline svg) ───────────────────────────────────────────────────
+function svg(path,size=16){
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${path}</svg>`;
+}
+const SVGS = {
+  x: '<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>',
+  check: '<polyline points="20 6 9 17 4 12"/>',
+  chevron: '<polyline points="6 9 12 15 18 9"/>',
+  users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>',
+  sparkle: '<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
+  plus: '<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>',
+  file: '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>',
+};
+function ic(name,size=16){return svg(SVGS[name]||'',size);}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-// ── FILE IMPORT ───────────────────────────────────────────────────────────
-function handleFile(input){
+// ── GEMINI ───────────────────────────────────────────────────────────────
+async function callGemini(parts){
+  const key = GEMINI_API_KEY;
+  if(!key) throw new Error('No Gemini API key.');
+  const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({contents:[{parts}],generationConfig:{temperature:0.4,maxOutputTokens:8192}})
+  });
+  if(!r.ok){const t=await r.text();throw new Error('Gemini '+r.status+': '+t.slice(0,200));}
+  const d=await r.json();
+  return d.candidates?.[0]?.content?.parts?.[0]?.text||'[]';
+}
+
+async function generateQuestions(){
+  S.generating=true; S.genError=null; render();
+  try {
+    const parts=[];
+    // Resource
+    if(S.resourceB64){
+      parts.push({inline_data:{mime_type:S.resourceMime,data:S.resourceB64}});
+      parts.push({text:'Above is the teaching resource (PDF/image). Use it as the sole source for generating questions.'});
+    }
+    if(S.notes.trim()){
+      parts.push({text:`Teaching notes / content:\n${S.notes}`});
+    }
+
+    // Build type-count instruction
+    const typeInstructions = selectedTypes().map(t=>{
+      const n=S.counts[t.id];
+      if(t.id==='mcq') return `${n} MCQ questions (4 options each, mark correct with correctIndex 0-3)`;
+      if(t.id==='tf') return `${n} True/False questions (set isTrue: true or false)`;
+      if(t.id==='fillblank') return `${n} fill-in-the-blank questions (use _____ for the blank, provide answer)`;
+      if(t.id==='oneword') return `${n} one-word/one-line questions (provide short answer)`;
+      if(t.id==='spotmistake') return `${n} spot-the-mistake questions (tokens array of words, wrongIndex, correct replacement, choices array with 3 options including correct)`;
+      if(t.id==='match') return `${Math.ceil(n/3)} Match the Following question(s) in MCQ format. For EACH question output EXACTLY this JSON structure (no deviation):
+{
+  "id": "q1",
+  "kind": "match",
+  "question": "Match the columns",
+  "columnA": [
+    {"letter":"A","text":"term 1"},
+    {"letter":"B","text":"term 2"},
+    {"letter":"C","text":"term 3"},
+    {"letter":"D","text":"term 4"}
+  ],
+  "columnB": [
+    {"letter":"p","text":"definition 1"},
+    {"letter":"q","text":"definition 2"},
+    {"letter":"r","text":"definition 3"},
+    {"letter":"s","text":"definition 4"}
+  ],
+  "options": [
+    "A-p, B-q, C-r, D-s",
+    "A-r, B-p, C-s, D-q",
+    "A-s, B-r, C-q, D-p",
+    "A-q, B-s, C-p, D-r"
+  ],
+  "correctOptionIndex": 0
+}
+Make sure columnA has exactly 4 items with letters A,B,C,D and columnB has exactly 4 items with letters p,q,r,s. The options array must have exactly 4 strings. correctOptionIndex must be 0,1,2, or 3.`;
+      if(t.id==='descriptive') return `${n} descriptive questions`;
+      return '';
+    }).join('\n');
+
+    const extraPrompt = S.prompt.trim() ? `\nExtra instruction: ${S.prompt}` : '';
+
+    parts.push({text:`Generate the following questions STRICTLY from the provided resource content only. Do not use outside knowledge.
+
+Types needed:
+${typeInstructions}${extraPrompt}
+
+Return ONLY a valid JSON array (no markdown, no backticks). Each item must have:
+- "id": "q1","q2",... (sequential)
+- "kind": one of: mcq|tf|fillblank|oneword|spotmistake|match|descriptive
+- For mcq: "question","options":[4 strings],"correctIndex":0-3
+- For tf: "statement","isTrue":true/false
+- For fillblank: "text" (with _____), "answer"
+- For oneword: "question","answer"
+- For spotmistake: "tokens":[word array],"wrongIndex":int,"correct":string,"choices":[3 strings]
+- For match: "items":[{"left":...,"right":...}] — one item in array for the whole set
+- For descriptive: "question"
+
+Generate exactly the numbers requested. Return only the JSON array.`});
+
+    const raw=await callGemini(parts);
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const raw_questions=JSON.parse(clean);
+    // Normalise match questions: convert old items[] format to new columnA/columnB/options format
+    S.questions=raw_questions.map(q=>{
+      if(q.kind!=='match')return q;
+      // Already in new format
+      if(q.columnA&&q.columnB&&q.options)return q;
+      // Old items[] format — convert
+      if(q.items&&q.items.length){
+        const letters_A=['A','B','C','D'];
+        const letters_B=['p','q','r','s'];
+        const items=q.items.slice(0,4);
+        const colA=items.map((it,i)=>({letter:letters_A[i],text:it.left||it.term||''}));
+        const colB=items.map((it,i)=>({letter:letters_B[i],text:it.right||it.definition||''}));
+        // Correct option: A-p, B-q, C-r, D-s (sequential)
+        const correctOpt=colA.map((a,i)=>a.letter+'-'+colB[i].letter).join(', ');
+        // Generate 3 wrong options by shuffling
+        const shuffles=[[0,2,1,3],[1,0,3,2],[2,3,0,1]];
+        const wrongOpts=shuffles.map(order=>colA.map((a,i)=>a.letter+'-'+colB[order[i]].letter).join(', '));
+        const options=[correctOpt,...wrongOpts];
+        // Shuffle options so correct isn't always first
+        const ci=Math.floor(Math.random()*4);
+        const shuffledOpts=[...options];
+        [shuffledOpts[0],shuffledOpts[ci]]=[shuffledOpts[ci],shuffledOpts[0]];
+        return {...q,columnA:colA,columnB:colB,options:shuffledOpts,correctOptionIndex:ci,question:q.question||'Match the columns'};
+      }
+      return q;
+    });
+    S.step=5; // review
+  } catch(e){
+    S.genError=e.message;
+    S.step=3;
+  }
+  S.generating=false;
+  render();
+}
+
+// ── FILE UPLOAD ───────────────────────────────────────────────────────────
+function handleFileUpload(input){
+  const file=input.files?.[0];
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    S.resourceB64=reader.result.split(',')[1];
+    S.resourceMime=file.type||'application/pdf';
+    S.resourceName=file.name;
+    S.resourceFile=file;
+    render();
+  };
+  reader.readAsDataURL(file);
+  input.value='';
+}
+
+function removeFile(){S.resourceB64=null;S.resourceMime=null;S.resourceName=null;S.resourceFile=null;render();}
+
+// ── PANELS ────────────────────────────────────────────────────────────────
+function stepBarsHTML(){
+  const total=3;
+  return '<div class="step-bars">'+ Array.from({length:total},(_,i)=>`<div class="step-bar ${S.step>i?'on':''}"></div>`).join('')+'</div>';
+}
+
+function step1HTML(){
+  const b=batch();
+  let dropList='';
+  if(S.batchOpen){
+    dropList='<div class="dd-list">'+BATCHES.map(bt=>`
+      <button class="dd-item ${S.batchId===bt.id?'sel':''}" onclick="selBatch('${bt.id}')">
+        <span style="display:flex;align-items:center;gap:8px">${ic('users')} ${esc(bt.name)} <span style="color:var(--ink4);font-size:11px">(${bt.students} students)</span></span>
+        ${S.batchId===bt.id?ic('check'):''}
+      </button>`).join('')+'</div>';
+  }
+  return `
+  <div class="field">
+    <div class="field-label">Class / Batch</div>
+    <button class="dd-btn" onclick="S.batchOpen=!S.batchOpen;render()">
+      ${b?`<span style="display:flex;align-items:center;gap:8px">${ic('users')} ${esc(b.name)}</span>`:`<span style="color:var(--ink4)">Select a class or batch</span>`}
+      ${ic('chevron')}
+    </button>
+    ${dropList}
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-secondary" onclick="closePanel()">Close</button>
+    <button class="btn btn-primary" ${canStep1()?'':'disabled'} onclick="go(2)">Continue</button>
+  </div>`;
+}
+
+function step2HTML(){
+  const b=batch();
+  return `
+  <div class="chip neutral" style="font-size:12px">${ic('users')} ${esc(b?b.name:'')}</div>
+  <div class="field">
+    <div class="field-label">Assignment title</div>
+    <input type="text" id="inp-title" value="${esc(S.title)}" placeholder="e.g. Photosynthesis Homework" oninput="S.title=this.value;syncStep2()"/>
+  </div>
+  <div class="field">
+    <div class="field-label">Description <span style="color:var(--ink4);font-weight:400">(optional)</span></div>
+    <textarea id="inp-desc" placeholder="What should students focus on?" oninput="S.description=this.value" rows="2">${esc(S.description)}</textarea>
+  </div>
+
+  <div class="field">
+    <div class="field-label">Resource — attach a PDF or image <span style="color:var(--ink4);font-weight:400">and/or type notes below</span></div>
+    ${S.resourceB64 ? `
+      <div class="resource-box has">
+        <div class="upload-done">${ic('file')} ${esc(S.resourceName)} <button onclick="removeFile()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:11px;font-weight:700;margin-left:6px">✕ Remove</button></div>
+      </div>` : `
+      <div class="upload-zone">
+        <input type="file" accept=".pdf,image/*" onchange="handleFileUpload(this)"/>
+        <div class="upload-zone-icon">${ic('upload',22)}</div>
+        <div class="upload-zone-label">Click or drag PDF / image here</div>
+        <div class="upload-zone-hint">PDF, JPG, PNG supported</div>
+      </div>`}
+    <button class="notes-toggle" onclick="S.showNotes=!S.showNotes;render()">
+      ${S.showNotes?'▾':'▸'} ${S.showNotes?'Hide':'Add'} notes manually
+    </button>
+    ${S.showNotes?`<textarea id="inp-notes" placeholder="Paste or type the lesson content here..." oninput="S.notes=this.value;syncStep2()" rows="5">${esc(S.notes)}</textarea>`:''}
+  </div>
+
+  ${S.resourceB64||S.notes.trim()?`<div class="chip success">${ic('check')} Resource ready — Gemini will generate from this content only.</div>`:`<div class="chip warn">⚠ Attach a PDF/image or enter notes before continuing.</div>`}
+
+  ${S.genError?`<div class="chip" style="background:var(--red-l);border:1px solid #fecaca;color:#991b1b">⚠ ${esc(S.genError)}</div>`:''}
+
+  <div class="btn-row spread">
+    <button class="btn btn-secondary" onclick="go(1)">Back</button>
+    <button class="btn btn-primary" id="btn-cont2" ${canStep2()?'':'disabled'} onclick="go(3)">Continue</button>
+  </div>`;
+}
+
+function step3HTML(){
+  const total=totalQ();
+  const rows=TYPES.map(t=>{
+    const n=S.counts[t.id]||0;
+    const on=n>0;
+    const stepper=on?`<div class="stepper">
+      <button onclick="dec('${t.id}')">−</button>
+      <span>${n}</span>
+      <button onclick="inc('${t.id}')" ${n>=8?'disabled':''}>+</button>
+    </div>`:`<button onclick="inc('${t.id}')" style="font-size:12px;font-weight:600;color:var(--blue);background:none;border:none;cursor:pointer">+ Add</button>`;
+    return `<div class="type-row ${on?'on':''}">
+      <div class="type-row-left" onclick="toggle('${t.id}')">
+        <div class="type-icon">${t.icon}</div>
+        <div><div class="type-name">${esc(t.label)}</div><div class="type-sub">${esc(t.sub)}</div></div>
+      </div>
+      ${stepper}
+    </div>`;
+  }).join('');
+
+  return `
+  <div class="field">
+    <div class="field-label">What should this assignment include?</div>
+    <div class="scroll-area">${rows}</div>
+  </div>
+  <div class="chip ${total>0?'success':'neutral'}">
+    ${ic('sparkle',13)} ${total>0?`${total} question${total!==1?'s':''} across ${selectedTypes().length} format${selectedTypes().length!==1?'s':''}`:'Pick at least one format above'}
+  </div>
+  <div class="field">
+    <div class="field-label">Extra instruction for AI <span style="color:var(--ink4);font-weight:400">(optional)</span></div>
+    <textarea placeholder='e.g. "Keep it simple, this is for revision"' oninput="S.prompt=this.value" rows="2">${esc(S.prompt)}</textarea>
+  </div>
+  <div class="btn-row spread">
+    <button class="btn btn-secondary" onclick="go(2)">Back</button>
+    <button class="btn btn-generate" ${canStep3()?'':'disabled'} onclick="go(4);generateQuestions()">
+      ${ic('sparkle')} Generate
+    </button>
+  </div>`;
+}
+
+function step4HTML(){
+  return `
+  <div class="gen-center">
+    <div class="spin-ring"></div>
+    <div>
+      <div style="font-size:14px;font-weight:600;color:var(--ink2)">Gemini is reading the resource…</div>
+      <div style="font-size:12px;color:var(--ink4);margin-top:4px">Generating ${totalQ()} questions — this takes a few seconds</div>
+    </div>
+  </div>`;
+}
+
+function panelHTML(){
+  let body='';
+  if(S.step===1)body=step1HTML();
+  else if(S.step===2)body=step2HTML();
+  else if(S.step===3)body=step3HTML();
+  else if(S.step===4)body=step4HTML();
+  return `<div class="panel">
+    <div class="panel-top">
+      <h2>Create Assignment</h2>
+      <button class="close-btn" onclick="closePanel()">${ic('x',16)}</button>
+    </div>
+    ${stepBarsHTML()}
+    <div class="panel-body">${body}</div>
+  </div>`;
+}
+
+// ── REVIEW ────────────────────────────────────────────────────────────────
+const KIND_LABELS={mcq:'Multiple Choice',tf:'True / False',fillblank:'Fill in the Blank',oneword:'One-word',spotmistake:'Spot the Mistake',match:'Match the Following',descriptive:'Descriptive'};
+const TEXT_FIELD={mcq:'question',tf:'statement',fillblank:'text',oneword:'question',descriptive:'question'};
+
+function qCardHTML(q,qi){
+  const field=TEXT_FIELD[q.kind];
+  let body='';
+  if(q.kind==='mcq'){
+    body=`<div class="opt-list">`+q.options.map((opt,oi)=>`
+      <label class="opt-row ${q.correctIndex===oi?'correct':''}">
+        <input type="radio" name="c-${q.id}" ${q.correctIndex===oi?'checked':''} onchange="S.questions.find(x=>x.id==='${q.id}').correctIndex=${oi};render()"/>
+        <input class="opt-text" value="${esc(opt)}" oninput="S.questions.find(x=>x.id==='${q.id}').options[${oi}]=this.value"/>
+        ${q.correctIndex===oi?'<span class="correct-tag">CORRECT</span>':''}
+      </label>`).join('')+'</div>';
+  } else if(q.kind==='tf'){
+    body=`<div class="opt-list" style="flex-direction:row">
+      <label class="opt-row ${q.isTrue?'correct':''}" style="flex:1;justify-content:center"><input type="radio" name="tf-${q.id}" ${q.isTrue?'checked':''} onchange="S.questions.find(x=>x.id==='${q.id}').isTrue=true;render()"/> True</label>
+      <label class="opt-row ${!q.isTrue?'correct':''}" style="flex:1;justify-content:center"><input type="radio" name="tf-${q.id}" ${!q.isTrue?'checked':''} onchange="S.questions.find(x=>x.id==='${q.id}').isTrue=false;render()"/> False</label>
+    </div>`;
+  } else if(q.kind==='fillblank'||q.kind==='oneword'){
+    body=`<div class="opt-list"><div style="font-size:11px;color:var(--ink4);margin-bottom:4px">Answer</div><input style="border:1px solid var(--line);border-radius:8px;padding:7px 11px;width:100%;font-size:13px;outline:none" value="${esc(q.answer)}" oninput="S.questions.find(x=>x.id==='${q.id}').answer=this.value"/></div>`;
+  } else if(q.kind==='descriptive'){
+    body=`<p class="desc-note">Written answer — teacher-reviewed.</p>`;
+  } else if(q.kind==='spotmistake'){
+    const pills=q.tokens.map((w,i)=>`<button onclick="S.questions.find(x=>x.id==='${q.id}').wrongIndex=${i};render()" style="border:1px solid ${q.wrongIndex===i?'#fca5a5':'var(--line)'};background:${q.wrongIndex===i?'#fef2f2':'#fff'};color:${q.wrongIndex===i?'#b91c1c':'var(--ink2)'};border-radius:7px;padding:5px 9px;font-size:13px;cursor:pointer;font-weight:${q.wrongIndex===i?700:400}">${esc(w)}</button>`).join(' ');
+    body=`<div style="padding-left:26px"><div style="font-size:11px;color:var(--ink4);margin-bottom:7px">Click wrong word:</div><div style="display:flex;flex-wrap:wrap;gap:5px">${pills}</div>
+      <div style="margin-top:10px;font-size:11px;color:var(--ink4)">Correct word:</div>
+      <input style="border:1px solid #a7f3d0;background:var(--green-l);border-radius:8px;padding:6px 10px;width:180px;font-size:13px;font-weight:600;color:var(--green-d);outline:none;margin-top:4px" value="${esc(q.correct)}" oninput="S.questions.find(x=>x.id==='${q.id}').correct=this.value"/>
+    </div>`;
+  } else if(q.kind==='match'){
+    const colA=(q.columnA||[]).map((it,i)=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <span style="width:20px;font-size:12px;font-weight:700;color:var(--blue-d);flex-shrink:0">${esc(it.letter||String.fromCharCode(65+i))}</span>
+      <input style="border:1px solid var(--line);border-radius:7px;padding:6px 9px;flex:1;font-size:12px;outline:none" value="${esc(it.text)}" oninput="S.questions.find(x=>x.id==='${q.id}').columnA[${i}].text=this.value"/>
+    </div>`).join('');
+    const colB=(q.columnB||[]).map((it,i)=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <span style="width:20px;font-size:12px;font-weight:700;color:var(--green-d);flex-shrink:0">${esc(it.letter||String.fromCharCode(112+i))}</span>
+      <input style="border:1px solid var(--line);border-radius:7px;padding:6px 9px;flex:1;font-size:12px;outline:none" value="${esc(it.text)}" oninput="S.questions.find(x=>x.id==='${q.id}').columnB[${i}].text=this.value"/>
+    </div>`).join('');
+    const opts=(q.options||[]).map((opt,oi)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <input type="radio" name="mc-${q.id}" ${q.correctOptionIndex===oi?'checked':''} onchange="S.questions.find(x=>x.id==='${q.id}').correctOptionIndex=${oi};render()"/>
+      <input style="border:1px solid ${q.correctOptionIndex===oi?'#6ee7b7':'var(--line)'};background:${q.correctOptionIndex===oi?'var(--green-l)':'#fff'};border-radius:7px;padding:5px 9px;flex:1;font-size:12px;outline:none" value="${esc(opt)}" oninput="S.questions.find(x=>x.id==='${q.id}').options[${oi}]=this.value"/>
+      ${q.correctOptionIndex===oi?'<span style="font-size:10px;font-weight:700;color:var(--green)">CORRECT</span>':''}
+    </div>`).join('');
+    return `<div class="q-card q-card-full">
+      <div class="q-head">
+        <div class="q-tag">Q${qi+1}<br/><span style="font-size:10px;color:var(--ink4)">Match</span></div>
+        <textarea class="q-textarea" rows="1" style="font-size:13px" oninput="S.questions.find(x=>x.id==='${q.id}').question=this.value">${esc(q.question||'Match the columns')}</textarea>
+        <button class="rm-btn" onclick="S.questions=S.questions.filter(x=>x.id!=='${q.id}');render()">${svg(SVGS.x)}</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-left:26px;margin-bottom:14px">
+        <div><div style="font-size:11px;font-weight:700;color:var(--blue-d);margin-bottom:8px">Column I</div>${colA}</div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--green-d);margin-bottom:8px">Column II</div>${colB}</div>
+      </div>
+      <div style="padding-left:26px">
+        <div style="font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:7px">Options (select correct one):</div>
+        ${opts}
+      </div>
+    </div>`;
+  }
+
+  return `<div class="q-card">
+    <div class="q-head">
+      <div class="q-tag">Q${qi+1}<br/><span style="font-size:10px;color:var(--ink4)">${esc(KIND_LABELS[q.kind]||q.kind)}</span></div>
+      <textarea class="q-textarea" rows="2" oninput="S.questions.find(x=>x.id==='${q.id}').${field}=this.value">${esc(q[field]||'')}</textarea>
+      <button class="rm-btn" onclick="S.questions=S.questions.filter(x=>x.id!=='${q.id}');render()">${svg(SVGS.x)}</button>
+    </div>
+    ${body}
+  </div>`;
+}
+
+function reviewHTML(){
+  const b=batch();
+  const cards=S.questions.length===0
+    ?`<div class="empty-card" style="grid-column:1/-1">No questions — remove all and start over.</div>`
+    :S.questions.map((q,i)=>qCardHTML(q,i)).join('');
+  return `<div class="review-wrap">
+    <div class="review-header">
+      <div>
+        <h1>${esc(S.title||'Untitled Assignment')}</h1>
+        <div class="review-meta">${esc(b?b.name:'')} · ${S.questions.length} question${S.questions.length!==1?'s':''}</div>
+      </div>
+      <button class="btn btn-secondary" onclick="resetAll()">Start over</button>
+    </div>
+    <div class="review-banner">${ic('check')} Generated from your resource. Edit any question below, then publish.</div>
+    <div class="q-grid">${cards}</div>
+    <div class="review-actions">
+      <button class="btn btn-secondary" onclick="go(3);S.step=3;render()">Regenerate</button>
+      <button class="btn btn-primary" ${S.questions.length===0?'disabled':''} onclick="publish()">Publish to ${esc(b?b.name:'batch')}</button>
+    </div>
+  </div>`;
+}
+
+function listHTML(){
+  const as=S.assignments;
+  return `<div class="review-wrap">
+    <div class="list-header">
+      <h1>Assignments</h1>
+      <button class="btn btn-primary" onclick="openPanel()">${ic('plus')} Create Assignment</button>
+    </div>
+    <div class="result-import-zone" style="margin-bottom:20px">
+      <input type="file" accept="application/json,.json" onchange="handleResultFile(this)"/>
+      <div style="font-size:22px;margin-bottom:6px">📋</div>
+      <div style="font-size:14px;font-weight:700;color:var(--ink2);margin-bottom:3px">Review a Student's Result</div>
+      <div style="font-size:12px;color:var(--ink4)">Student downloads their result after submitting. Load that file here to review and override marks.</div>
+    </div>
+    ${as.length===0?`<div class="empty-card">No assignments yet — create one to get started.</div>`
+    :as.map(a=>`<div class="a-card">
+      <div>
+        <div class="a-card-title">${esc(a.title)}</div>
+        <div class="a-card-meta">${esc(a.batchName)} · ${a.questions.length} questions</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <button class="btn btn-secondary" style="font-size:12px;padding:7px 12px" onclick="exportJSON('${a.id}')">${ic('file',13)} Export JSON</button>
+        <span class="badge-pub">Published</span>
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+// ── RESULT REVIEW ────────────────────────────────────────────────────────
+function handleResultFile(input){
   const f=input.files&&input.files[0];if(!f)return;
   const r=new FileReader();
   r.onload=()=>{
     try{
       const d=JSON.parse(r.result);
-      if(!d.questions||!Array.isArray(d.questions))throw new Error('No questions array found.');
-      // Normalise match questions (old format compatibility)
-      d.questions=d.questions.map(q=>{
-        if(q.kind!=='match')return q;
-        if(q.columnA&&q.columnB&&q.options)return q;
-        if(q.items&&q.items.length){
-          const lA=['A','B','C','D'],lB=['p','q','r','s'];
-          const items=q.items.slice(0,4);
-          const colA=items.map((it,i)=>({letter:lA[i],text:it.left||it.term||''}));
-          const colB=items.map((it,i)=>({letter:lB[i],text:it.right||it.definition||''}));
-          const correctOpt=colA.map((a,i)=>a.letter+'-'+colB[i].letter).join(', ');
-          const sh=[[0,2,1,3],[1,0,3,2],[2,3,0,1]];
-          const wrong=sh.map(o=>colA.map((a,i)=>a.letter+'-'+colB[o[i]].letter).join(', '));
-          const opts=[correctOpt,...wrong];
-          const ci=Math.floor(Math.random()*4);
-          [opts[0],opts[ci]]=[opts[ci],opts[0]];
-          return {...q,columnA:colA,columnB:colB,options:opts,correctOptionIndex:ci,question:q.question||'Match the columns'};
-        }
-        return q;
-      });
-      S={quiz:d,answers:{},screen:'taking',error:null};render();
-    }catch(e){S.error='Could not read file: '+e.message;render();}
+      if(!d.studentResult||!d.answers)throw new Error('Not a valid student result file.');
+      S.resultReview=d;
+      S.overrides={};
+      S.showReview=true;
+      render();
+    }catch(e){showToast('Error: '+e.message);}
   };
-  r.onerror=()=>{S.error='Could not read file. Try again.';render();};
   r.readAsText(f);
+  input.value='';
 }
 
-// ── ANSWER SETTERS ────────────────────────────────────────────────────────
-function setAns(id,v){S.answers[id]=v;render();}
-function setTextAns(id,v){S.answers[id]=v;}
-function spotToken(id,idx){S.answers[id]={wrongIndex:idx,choice:null};render();}
-function spotChoice(id,c){
-  const cur=S.answers[id]||{};
-  if(cur.wrongIndex===undefined||cur.wrongIndex===null)return;
-  S.answers[id]={...cur,choice:c};render();
-}
-function matchLeft(id,idx){return;// legacy
-  const cur=S.answers[id]||{pairs:{},pending:null};
-  if(cur.pairs[idx]!==undefined)return;
-  cur.pending=idx;S.answers[id]=cur;render();
-}
-function matchRight(id,idx){return;// legacy
-  const cur=S.answers[id]||{pairs:{},pending:null};
-  if(cur.pending===null||cur.pending===undefined)return;
-  if(Object.values(cur.pairs).includes(idx))return;
-  cur.pairs[cur.pending]=idx;cur.pending=null;S.answers[id]=cur;render();
-}
-function resetMatch(id){S.answers[id]=undefined;render();}
-function setDiagram(id,idx,v){const cur=S.answers[id]||{};cur[idx]=v;S.answers[id]=cur;}
-
-// ── RENDER QUESTIONS ─────────────────────────────────────────────────────
-function shell(q,qi,prompt,body){
-  return `<div class="q-card">
-    <div class="q-num">Question ${qi+1}</div>
-    <div class="q-kind">${esc(KIND_LABELS[q.kind]||q.kind)}</div>
-    ${prompt?`<div class="q-prompt">${prompt}</div>`:'<div style="height:4px"></div>'}
-    ${body}
-  </div>`;
+function finalStatus(ans){
+  if(S.overrides[ans.questionId]==='correct') return 'correct';
+  if(S.overrides[ans.questionId]==='incorrect') return 'incorrect';
+  return ans.autoStatus;
 }
 
-function rMCQ(q,qi){
-  const sel=S.answers[q.id];
-  const opts=q.options.map((o,oi)=>`<button class="opt-btn ${sel===oi?'sel':''}" onclick="setAns('${q.id}',${oi})">
-    <span class="opt-letter">${String.fromCharCode(65+oi)}</span><span>${esc(o)}</span></button>`).join('');
-  return shell(q,qi,esc(q.question),opts);
+function overrideAnswer(qid, status){
+  S.overrides[qid]=status;
+  render();
 }
-function rTF(q,qi){
-  const sel=S.answers[q.id];
-  return shell(q,qi,esc(q.statement),`<div class="tf-row">
-    <button class="tf-btn ${sel===true?'sel':''}" onclick="setAns('${q.id}',true)">True</button>
-    <button class="tf-btn ${sel===false?'sel':''}" onclick="setAns('${q.id}',false)">False</button>
-  </div>`);
-}
-function rFill(q,qi){
-  const v=S.answers[q.id]||'';
-  return shell(q,qi,esc(q.text),`<input class="ans-input" value="${esc(v)}" placeholder="Type your answer..." oninput="setTextAns('${q.id}',this.value)"/>`);
-}
-function rOneword(q,qi){
-  const v=S.answers[q.id]||'';
-  return shell(q,qi,esc(q.question),`<input class="ans-input" value="${esc(v)}" placeholder="Your answer..." oninput="setTextAns('${q.id}',this.value)"/>`);
-}
-function rDescriptive(q,qi){
-  const v=S.answers[q.id]||'';
-  return shell(q,qi,esc(q.question),`<textarea class="ans-input" rows="4" placeholder="Write your answer here..." oninput="setTextAns('${q.id}',this.value)">${esc(v)}</textarea>
-    <p style="font-size:12px;color:var(--ink4);margin-top:7px">Your teacher will read and grade this.</p>`);
-}
-function rSpot(q,qi){
-  const ans=S.answers[q.id]||{};
-  const pills=q.tokens.map((w,i)=>`<button class="token-pill ${ans.wrongIndex===i?'marked':''}" onclick="spotToken('${q.id}',${i})">${esc(w)}</button>`).join('');
-  let choices='';
-  if(ans.wrongIndex!==null&&ans.wrongIndex!==undefined){
-    const cs=q.choices&&q.choices.length?q.choices:[q.correct];
-    choices=`<div style="font-size:12px;color:var(--ink4);margin-top:12px;margin-bottom:6px">Pick the correct word:</div>
-      <div class="choice-row">${cs.map(c=>`<button class="choice-btn ${ans.choice===c?'sel':''}" onclick="spotChoice('${q.id}','${esc(c).replace(/'/g,"&#39;")}')">${esc(c)}</button>`).join('')}</div>`;
-  }
-  return shell(q,qi,null,`<div style="font-size:12px;color:var(--ink4);margin-bottom:8px">Step 1 — click the word that's wrong</div><div>${pills}</div>${choices}`);
-}
-function rMatch(q,qi){
-  const sel=S.answers[q.id];
-  const colA=q.columnA||[];
-  const colB=q.columnB||[];
-  const opts=(q.options||[]).map((opt,oi)=>`<button class="opt-btn ${sel===oi?'sel':''}" onclick="setAns('${q.id}',${oi})">
-    <span class="opt-letter">${String.fromCharCode(49+oi)}</span><span>${esc(opt)}</span></button>`).join('');
-  const body=`
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;background:var(--line2);border-radius:10px;padding:14px">
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--blue-d);margin-bottom:8px;letter-spacing:.3px">Column I</div>
-        ${colA.map(it=>`<div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px;color:var(--ink2)"><span style="font-weight:700;color:var(--blue-d);flex-shrink:0">(${esc(it.letter)})</span><span>${esc(it.text)}</span></div>`).join('')}
-      </div>
-      <div>
-        <div style="font-size:11px;font-weight:700;color:var(--green-d);margin-bottom:8px;letter-spacing:.3px">Column II</div>
-        ${colB.map(it=>`<div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px;color:var(--ink2)"><span style="font-weight:700;color:var(--green-d);flex-shrink:0">(${esc(it.letter)})</span><span>${esc(it.text)}</span></div>`).join('')}
-      </div>
-    </div>
-    <div style="font-size:12px;color:var(--ink4);margin-bottom:8px">Select the correct combination:</div>
-    ${opts}`;
-  return shell(q,qi,esc(q.question||'Match the columns'),body);
+function undoOverride(qid){
+  delete S.overrides[qid];
+  render();
 }
 
-function renderQ(q,qi){
-  switch(q.kind){
-    case 'mcq':return rMCQ(q,qi);
-    case 'tf':return rTF(q,qi);
-    case 'fillblank':return rFill(q,qi);
-    case 'oneword':return rOneword(q,qi);
-    case 'descriptive':return rDescriptive(q,qi);
-    case 'spotmistake':return rSpot(q,qi);
-    case 'match':return rMatch(q,qi);
-    default:return '';
-  }
-}
-
-// ── GRADING ───────────────────────────────────────────────────────────────
-function norm(s){return String(s||'').trim().toLowerCase();}
-
-// Levenshtein distance — allows small typos
-function levenshtein(a,b){
-  const m=a.length,n=b.length;
-  const dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
-  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
-    dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
-  return dp[m][n];
-}
-
-// Accept if distance <= 1 for short words, <= 2 for longer words
-function fuzzyMatch(student,correct){
-  const s=norm(student),c=norm(correct);
-  if(s===c)return true;
-  const maxDist=c.length<=4?0:c.length<=8?1:2;
-  return levenshtein(s,c)<=maxDist;
-}
-function grade(q){
-  // Teacher override takes priority
-  if(S.overrides[q.id]==='correct') return{status:'correct',detail:'✓ Marked correct by teacher',extra:''};
-  if(S.overrides[q.id]==='incorrect') return{status:'incorrect',detail:'✗ Marked incorrect by teacher',extra:''};
-  const a=S.answers[q.id];
-  if(q.kind==='mcq'){
-    if(a===undefined)return{status:'pending',detail:'Not answered',extra:''};
-    const correct=a===q.correctIndex;
-    return{status:correct?'correct':'incorrect',
-      detail:correct?'Your answer: '+esc(q.options[a]):'Your answer: '+esc(q.options[a]),
-      extra:correct?'':'Correct answer: '+esc(q.options[q.correctIndex])};
-  }
-  if(q.kind==='tf'){
-    if(a===undefined)return{status:'pending',detail:'Not answered',extra:''};
-    const correct=a===q.isTrue;
-    return{status:correct?'correct':'incorrect',
-      detail:'Your answer: '+(a?'True':'False'),
-      extra:correct?'':'Correct answer: '+(q.isTrue?'True':'False')};
-  }
-  if(q.kind==='fillblank'||q.kind==='oneword'){
-    if(!a)return{status:'pending',detail:'Not answered',extra:''};
-    const correct=fuzzyMatch(a,q.answer);
-    const near=!correct&&levenshtein(norm(a),norm(q.answer))<=2;
-    return{status:correct?'correct':near?'partial':'incorrect',
-      detail:'Your answer: '+esc(a),
-      extra:correct?'':(near?'Almost correct! ':'')+'Correct answer: '+esc(q.answer)};
-  }
-  if(q.kind==='spotmistake'){
-    if(!a||a.wrongIndex===undefined||!a.choice)return{status:'pending',detail:'Not completed',extra:''};
-    const wordOk=a.wrongIndex===q.wrongIndex;
-    const choiceOk=norm(a.choice)===norm(q.correct);
-    const ok=wordOk&&choiceOk;
-    let detail='You picked: "'+esc(q.tokens[a.wrongIndex]||'?')+'" → "'+esc(a.choice||'?')+'"';
-    let extra=ok?'':'Correct: "'+esc(q.tokens[q.wrongIndex])+'" → "'+esc(q.correct)+'"';
-    if(!wordOk&&!choiceOk) extra='Wrong word and wrong replacement. '+extra;
-    else if(!wordOk) extra='Right replacement but wrong word identified. '+extra;
-    else if(!choiceOk) extra='Right word identified but wrong replacement. '+extra;
-    return{status:ok?'correct':'incorrect',detail,extra};
-  }
-  if(q.kind==='match'){
-    if(a===undefined)return{status:'pending',detail:'Not answered',extra:''};
-    const correct=a===q.correctOptionIndex;
-    return{
-      status:correct?'correct':'incorrect',
-      detail:'Your answer: '+esc((q.options||[])[a]||'?'),
-      extra:correct?'':'Correct answer: '+esc((q.options||[])[q.correctOptionIndex]||'?')
-    };
-  }
-  if(q.kind==='descriptive'){
-    return{status:'pending',detail:a?'Submitted — awaiting teacher review':'Not answered',extra:''};
-  }
-  return{status:'pending',detail:'',extra:''};
-}
-
-function submitQuiz(){S.screen='results';render();window.scrollTo({top:0,behavior:'smooth'});}
-function retakeQuiz(){S.answers={};S.screen='taking';render();window.scrollTo({top:0,behavior:'smooth'});}
-function backToImport(){S={quiz:null,answers:{},screen:'import',error:null};render();}
-
-// ── SCREENS ───────────────────────────────────────────────────────────────
-function importScreen(){
-  return `<div class="import-card">
-    <h2>Load Your Assignment</h2>
-    <p>Ask your teacher for the assignment file (.json) and open it here to begin.</p>
-    <label class="file-label" for="fi">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      Choose Assignment File
-    </label>
-    <input id="fi" type="file" accept="application/json,.json" onchange="handleFile(this)"/>
-    ${S.error?`<div class="err-box">${esc(S.error)}</div>`:''}
-  </div>`;
-}
-
-function takingScreen(){
-  const q=S.quiz;
-  const answered=q.questions.filter(qq=>{
-    const a=S.answers[qq.id];
-    if(qq.kind==='spotmistake')return a&&a.choice;
-    if(qq.kind==='match')return a&&a.pairs&&Object.keys(a.pairs).length===qq.items.length;
-    return a!==undefined&&a!=='';
+function calcFinalScore(){
+  if(!S.resultReview)return{scored:0,total:0};
+  const answers=S.resultReview.answers||[];
+  const auto=answers.filter(a=>a.kind!=='descriptive');
+  const scored=auto.filter(a=>{
+    const st=finalStatus(a);
+    return st==='correct'||st==='partial';
   }).length;
-  const pct=Math.round(answered/q.questions.length*100);
-
-  return `<div class="quiz-hdr">
-    <h2>${esc(q.title)}</h2>
-    <div class="quiz-hdr-meta">${q.questions.length} question${q.questions.length!==1?'s':''}</div>
-    ${q.description?`<div class="quiz-hdr-desc">${esc(q.description)}</div>`:''}
-    <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
-  </div>
-  ${q.questions.map((qq,i)=>renderQ(qq,i)).join('')}
-  <div class="submit-bar">
-    <button class="btn-primary" onclick="submitQuiz()">Submit</button>
-  </div>`;
+  return{scored,total:auto.length};
 }
 
-function resultsScreen(){
-  const q=S.quiz;
-  const graded=q.questions.map(qq=>({q:qq,r:grade(qq)}));
-  const auto=graded.filter(g=>g.q.kind!=='descriptive');
-  // (gradedFinal and autoFinal computed below after override check)
-  // Re-grade after overrides applied
-  const gradedFinal=q.questions.map(qq=>({q:qq,r:grade(qq)}));
-  const autoFinal=gradedFinal.filter(g=>g.q.kind!=='descriptive');
-  const correct=autoFinal.filter(g=>g.r.status==='correct'||g.r.status==='partial').length;
-  const pct=autoFinal.length?Math.round(correct/autoFinal.length*100):0;
+function exportReviewedResult(){
+  const d=S.resultReview;
+  const {scored,total}=calcFinalScore();
+  const payload={
+    ...d,
+    teacherReviewed:true,
+    reviewedAt:new Date().toISOString(),
+    teacherOverrides:S.overrides,
+    finalScore:scored,
+    totalAuto:total,
+    answers:d.answers.map(a=>({...a,teacherOverride:S.overrides[a.questionId]||null,finalStatus:finalStatus(a)}))
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const slug=(d.quizTitle||'reviewed').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  const link=document.createElement('a');link.href=url;link.download=slug+'_reviewed.json';
+  document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(url);
+}
 
-  // get question prompt text for display
-  function qText(qq){
-    if(qq.kind==='mcq')return qq.question;
-    if(qq.kind==='tf')return qq.statement;
-    if(qq.kind==='fillblank')return qq.text;
-    if(qq.kind==='oneword')return qq.question;
-    if(qq.kind==='descriptive')return qq.question;
-    if(qq.kind==='spotmistake')return qq.tokens.join(' ');
-    if(qq.kind==='match')return 'Match the Following';
-    return '';
-  }
 
-  const cards=gradedFinal.map(({q:qq,r},i)=>{
-    const lbl=r.status==='correct'?'✓ Correct':r.status==='partial'?'◑ Almost':r.status==='incorrect'?'✗ Incorrect':'⏳ Pending';
-    const cls=r.status==='correct'?'correct':r.status==='partial'?'partial':r.status==='incorrect'?'incorrect':'pending';
-    const tagCls=cls;
+function reviewHTML(){
+  const d=S.resultReview;
+  const {scored,total}=calcFinalScore();
+  const pct=total?Math.round(scored/total*100):0;
+  const overrideCount=Object.keys(S.overrides).length;
 
-    // Build a readable question display
-    let questionDisplay='';
-    if(qq.kind==='mcq'){
-      questionDisplay=esc(qq.question)+'<div style="margin-top:6px;display:flex;flex-direction:column;gap:3px">'+
-        (qq.options||[]).map((o,oi)=>`<div style="font-size:12px;padding:3px 7px;border-radius:6px;background:${oi===qq.correctOptionIndex?'var(--green-l)':oi===S.answers[qq.id]&&oi!==qq.correctOptionIndex?'var(--red-l)':'var(--line2)'};color:${oi===qq.correctOptionIndex?'var(--green-d)':oi===S.answers[qq.id]&&oi!==qq.correctOptionIndex?'#991b1b':'var(--ink3)'}">
-          ${String.fromCharCode(65+oi)}. ${esc(o)} ${oi===qq.correctOptionIndex?'✓':''}
-        </div>`).join('')+'</div>';
-    } else if(qq.kind==='tf'){
-      questionDisplay=esc(qq.statement);
-    } else if(qq.kind==='fillblank'){
-      questionDisplay=esc(qq.text);
-    } else if(qq.kind==='oneword'){
-      questionDisplay=esc(qq.question);
-    } else if(qq.kind==='descriptive'){
-      questionDisplay=esc(qq.question);
-    } else if(qq.kind==='spotmistake'){
-      const ans=S.answers[qq.id]||{};
-      questionDisplay=(qq.tokens||[]).map((w,wi)=>`<span style="display:inline-block;margin:2px 2px;padding:3px 7px;border-radius:6px;font-size:13px;background:${wi===qq.wrongIndex?'var(--red-l)':wi===ans.wrongIndex&&wi!==qq.wrongIndex?'var(--amber-l)':'var(--line2)'};color:${wi===qq.wrongIndex?'#991b1b':'var(--ink2)'};">${esc(w)}</span>`).join(' ');
-    } else if(qq.kind==='match'){
-      questionDisplay='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">'+
-        '<div><div style="font-size:10px;font-weight:700;color:var(--blue-d);margin-bottom:5px">Column I</div>'+
-        (qq.columnA||[]).map(it=>`<div style="font-size:12px;color:var(--ink2);margin-bottom:3px"><b style="color:var(--blue-d)">(${esc(it.letter)})</b> ${esc(it.text)}</div>`).join('')+'</div>'+
-        '<div><div style="font-size:10px;font-weight:700;color:var(--green-d);margin-bottom:5px">Column II</div>'+
-        (qq.columnB||[]).map(it=>`<div style="font-size:12px;color:var(--ink2);margin-bottom:3px"><b style="color:var(--green-d)">(${esc(it.letter)})</b> ${esc(it.text)}</div>`).join('')+'</div></div>';
-    }
+  const cards=(d.answers||[]).map((ans,i)=>{
+    const fs=finalStatus(ans);
+    const isOverridden=S.overrides[ans.questionId];
+    const tagClass=fs==='correct'?'correct':fs==='partial'?'partial':fs==='incorrect'?'incorrect':'pending';
+    const tagLabel=fs==='correct'?'✓ Correct':fs==='partial'?'◑ Almost':fs==='incorrect'?'✗ Incorrect':'⏳ Pending';
 
-    return `<div class="result-card ${cls}">
-      <div class="result-top">
+    // For descriptive, always show override
+    const canMarkCorrect = fs!=='correct';
+    const canMarkIncorrect = fs==='correct'||fs==='partial';
+
+    return `<div class="review-result-card">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
         <div style="flex:1">
-          <div style="font-size:11px;color:var(--ink4);margin-bottom:4px">Q${i+1} · ${esc(KIND_LABELS[qq.kind]||qq.kind)}</div>
-          <div style="font-size:13px;font-weight:600;color:var(--ink);line-height:1.5">${questionDisplay}</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:4px">
+            <span class="rr-q-num">Q${i+1}</span>
+            <span class="rr-kind">${ans.kind||''}</span>
+            ${isOverridden?`<span class="status-tag override">✏ Overridden</span>`:''}
+          </div>
+          <div class="rr-question">${esc(ans.questionText||'')}</div>
         </div>
-        <span class="result-tag ${tagCls}" style="white-space:nowrap;flex-shrink:0;margin-left:10px">${lbl}</span>
+        <span class="status-tag ${tagClass}" style="flex-shrink:0">${tagLabel}</span>
       </div>
-      ${r.detail?`<div class="result-detail" style="margin-top:8px">${r.detail}</div>`:''}
-      ${r.extra?`<div class="result-extra">${r.extra}</div>`:''}
-      ${S.teacherMode?`<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--line);display:flex;align-items:center;gap:8px">
-        <span style="font-size:11px;color:var(--ink4)">Teacher override:</span>
-        ${S.overrides[qq.id]==='correct'
-          ?`<button class="override-btn unmark" onclick="delete S.overrides['${qq.id}'];render()">↩ Remove override</button>`
-          :`<button class="override-btn mark-correct" onclick="S.overrides['${qq.id}']='correct';render()">✓ Mark as Correct</button>`
-        }
-        ${S.overrides[qq.id]==='incorrect'
-          ?''
-          :S.overrides[qq.id]==='correct'?''
-          :(r.status==='correct'||r.status==='partial')?`<button class="override-btn unmark" onclick="S.overrides['${qq.id}']='incorrect';render()">✗ Mark as Incorrect</button>`:''
-        }
+      <div class="rr-answer-row">
+        <span class="rr-label">Student's answer</span>
+        <span class="rr-value" style="background:${fs==='correct'?'var(--green-l)':fs==='incorrect'?'var(--red-l)':'var(--line2)'};padding:4px 10px;border-radius:7px">${esc(ans.studentAnswer||'—')}</span>
+      </div>
+      ${ans.question&&(ans.kind==='fillblank'||ans.kind==='oneword')?`<div class="rr-answer-row">
+        <span class="rr-label">Correct answer</span>
+        <span class="rr-value" style="background:var(--green-l);padding:4px 10px;border-radius:7px;color:var(--green-d)">${esc(ans.question.answer||'')}</span>
       </div>`:''}
+      ${ans.kind==='descriptive'?`<div class="rr-answer-row"><span class="rr-label">Type</span><span class="rr-value" style="color:var(--ink4)">Written — manual grading needed</span></div>`:''}
+      <div class="override-row">
+        <span style="font-size:11px;font-weight:600;color:var(--ink4)">Teacher override:</span>
+        ${isOverridden
+          ?`<button class="ov-btn undo" onclick="undoOverride('${ans.questionId}')">↩ Undo override</button>`
+          :''
+        }
+        ${!isOverridden&&canMarkCorrect
+          ?`<button class="ov-btn mark-correct" onclick="overrideAnswer('${ans.questionId}','correct')">✓ Mark Correct</button>`
+          :''
+        }
+        ${!isOverridden&&canMarkIncorrect
+          ?`<button class="ov-btn mark-incorrect" onclick="overrideAnswer('${ans.questionId}','incorrect')">✗ Mark Incorrect</button>`
+          :''
+        }
+        ${!isOverridden&&!canMarkCorrect&&!canMarkIncorrect
+          ?`<span style="font-size:12px;color:var(--ink4)">No override needed</span>`
+          :''
+        }
+      </div>
     </div>`;
   }).join('');
 
-  return `<div class="score-banner">
-    <div class="score-num">${correct} / ${auto.length}</div>
-    <div class="score-label">${pct}% correct (including near-correct answers)${q.questions.length>auto.length?' · written answers sent to teacher':''}</div>
-  </div>
-  <div class="teacher-bar">
-    <div>
-      <div class="teacher-bar-label">🖊 Teacher Review Mode</div>
-      <div class="teacher-hint">Turn on to manually override any answer to correct / incorrect</div>
+  return `<div class="review-wrap">
+    <div class="review-header">
+      <div>
+        <div style="font-size:13px;color:var(--ink4);margin-bottom:3px">Reviewing result for</div>
+        <h1>${esc(d.quizTitle||'Assignment')}</h1>
+        <div class="review-meta">Submitted ${new Date(d.submittedAt||Date.now()).toLocaleString()} · Auto score: ${d.autoScore||0}/${d.totalAuto||0}</div>
+      </div>
+      <button class="btn btn-secondary" onclick="S.showReview=false;S.resultReview=null;S.overrides={};render()">← Back</button>
     </div>
-    <div class="toggle-wrap">
-      <span style="font-size:12px;color:#94a3b8">${S.teacherMode?'ON':'OFF'}</span>
-      <button class="toggle ${S.teacherMode?'on':''}" onclick="S.teacherMode=!S.teacherMode;render()"></button>
+
+    <div style="background:linear-gradient(135deg,var(--blue-d),#0f766e);border-radius:var(--radius-lg);padding:20px 24px;color:#fff;display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+      <div>
+        <div style="font-size:36px;font-weight:800;line-height:1">${scored} <span style="font-size:20px;opacity:.7">/ ${total}</span></div>
+        <div style="font-size:13px;opacity:.75;margin-top:4px">${pct}% · After teacher review${overrideCount>0?' · '+overrideCount+' override(s) applied':''}</div>
+      </div>
+      <button class="btn" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3)" onclick="exportReviewedResult()">📥 Save reviewed result</button>
     </div>
-  </div>
-  ${cards}
-  <div class="submit-bar">
-    <button class="btn-secondary" onclick="retakeQuiz()">Retake</button>
-    <button class="btn-primary" onclick="backToImport()">Load Another</button>
+
+    <div class="review-banner">✏ Review each answer below. Override any auto-graded result if needed — especially for fill-in-the-blank and one-word answers.</div>
+    ${cards}
   </div>`;
 }
 
-// ── ROOT RENDER ───────────────────────────────────────────────────────────
+// ── RENDER ────────────────────────────────────────────────────────────────
 function render(){
-  let body='';
-  if(S.screen==='import')body=importScreen();
-  else if(S.screen==='taking')body=takingScreen();
-  else body=resultsScreen();
+  const showPanel = S.step>=1 && S.step<=4;
+  const showReview = S.step===5;
 
-  document.getElementById('app').innerHTML=`<div class="wrap">
-    <div class="topbar">
-      <div class="t-logo">S</div>
-      <div><div class="t-title">Student Portal</div><div class="t-sub">${S.quiz?esc(S.quiz.title):'No assignment loaded'}</div></div>
-    </div>
-    ${body}
-  </div>`;
+  document.getElementById('content').className='content'+(showPanel&&!showReview?' dim':'');
+  if(S.showReview){
+    document.getElementById('content').innerHTML = reviewHTML();
+  } else {
+    document.getElementById('content').innerHTML = showReview ? reviewHTML() : listHTML();
+  }
+  document.getElementById('panel-wrap').innerHTML = (showPanel&&!S.showReview) ? panelHTML() : '';
+
+  const t=document.getElementById('toast');
+  if(S.toast){t.textContent=S.toast;t.classList.add('show');}
+  else{t.classList.remove('show');}
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────────────
+function openPanel(){S.step=1;render();}
+function closePanel(){S.step=0;render();}
+function go(n){S.step=n;S.batchOpen=false;render();}
+function selBatch(id){S.batchId=id;S.batchOpen=false;render();}
+function syncStep2(){const btn=document.getElementById('btn-cont2');if(btn)btn.disabled=!canStep2();}
+function toggle(id){const t=TYPES.find(x=>x.id===id);const min=t&&t.min?t.min:3;S.counts[id]=(S.counts[id]||0)>0?0:min;render();}
+function inc(id){S.counts[id]=Math.min((S.counts[id]||0)+1,8);render();}
+function dec(id){const t=TYPES.find(x=>x.id===id);const min=t&&t.min&&(S.counts[id]||0)>0?t.min:0;S.counts[id]=Math.max((S.counts[id]||0)-1,min);render();}
+function resetAll(){S.step=1;S.batchId=null;S.title='';S.description='';S.resourceB64=null;S.resourceMime=null;S.resourceName=null;S.notes='';S.showNotes=false;S.counts={};S.prompt='';S.questions=[];S.genError=null;render();}
+
+function publish(){
+  const b=batch();
+  S.assignments.unshift({
+    id:'a'+Date.now(),
+    title:S.title||'Untitled',
+    description:S.description||'',
+    batchName:b?b.name:'',
+    batchId:S.batchId,
+    questions:S.questions,
+  });
+  S.toast='Published to '+(b?b.name:'batch');
+  S.step=0;
+  render();
+  setTimeout(()=>{S.toast=null;render();},3000);
+}
+
+function exportJSON(id){
+  const a=S.assignments.find(x=>x.id===id);if(!a)return;
+  const blob=new Blob([JSON.stringify({format:'shaheen-quiz-v1',...a},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const slug=(a.title||'quiz').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  const link=document.createElement('a');link.href=url;link.download=slug+'.json';
+  document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(url);
 }
 
 render();
