@@ -179,7 +179,7 @@ const TYPES = [
   {id:'fillblank',label:'Fill in the Blank',sub:'Recall key terms',        icon:'✏'},
   {id:'oneword',label:'One-word / One-line',sub:'Fastest pulse check',     icon:'⚡'},
   {id:'spotmistake',label:'Spot the Mistake',sub:'Find the wrong word',    icon:'🔍'},
-  {id:'match', label:'Match the Following',sub:'Pair terms & definitions (min 3 pairs)', icon:'🔗',min:3},
+  {id:'match', label:'Match the Following',sub:'Column-I vs Column-II with 4 MCQ combos', icon:'🔗',min:3},
   {id:'descriptive',label:'Descriptive',sub:'Written answers',             icon:'📝'},
 ];
 
@@ -258,7 +258,13 @@ async function generateQuestions(){
       if(t.id==='fillblank') return `${n} fill-in-the-blank questions (use _____ for the blank, provide answer)`;
       if(t.id==='oneword') return `${n} one-word/one-line questions (provide short answer)`;
       if(t.id==='spotmistake') return `${n} spot-the-mistake questions (tokens array of words, wrongIndex, correct replacement, choices array with 3 options including correct)`;
-      if(t.id==='match') return `1 match-the-following set with ${n} pairs minimum (items array of {left,right})`;
+      if(t.id==='match') return `${Math.ceil(n/3)} match-the-following question(s). Each must have:
+- "columnA": array of {letter:"A"|"B"|"C"|"D", text:"..."} (4 items)
+- "columnB": array of {letter:"p"|"q"|"r"|"s", text:"..."} (4 items)
+- "correctMapping": {"A":"p","B":"r","C":"q","D":"s"} (correct match for each)
+- "options": array of 4 strings, each a combination like "A-p, B-q, C-r, D-s". One must be correct.
+- "correctOptionIndex": 0-3 (index of correct option in options array)
+The 3 wrong options should have plausible but incorrect combinations.`;
       if(t.id==='descriptive') return `${n} descriptive questions`;
       return '';
     }).join('\n');
@@ -481,18 +487,33 @@ function qCardHTML(q,qi){
       <input style="border:1px solid #a7f3d0;background:var(--green-l);border-radius:8px;padding:6px 10px;width:180px;font-size:13px;font-weight:600;color:var(--green-d);outline:none;margin-top:4px" value="${esc(q.correct)}" oninput="S.questions.find(x=>x.id==='${q.id}').correct=this.value"/>
     </div>`;
   } else if(q.kind==='match'){
-    const pairs=(q.items||[]).map((p,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-      <input style="border:1px solid var(--line);border-radius:7px;padding:6px 10px;flex:1;font-size:13px;outline:none" value="${esc(p.left)}" oninput="S.questions.find(x=>x.id==='${q.id}').items[${i}].left=this.value"/>
-      <span style="color:var(--ink4)">↔</span>
-      <input style="border:1px solid var(--line);border-radius:7px;padding:6px 10px;flex:1;font-size:13px;outline:none" value="${esc(p.right)}" oninput="S.questions.find(x=>x.id==='${q.id}').items[${i}].right=this.value"/>
+    const colA=(q.columnA||[]).map((it,i)=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <span style="width:20px;font-size:12px;font-weight:700;color:var(--blue-d);flex-shrink:0">${esc(it.letter||String.fromCharCode(65+i))}</span>
+      <input style="border:1px solid var(--line);border-radius:7px;padding:6px 9px;flex:1;font-size:12px;outline:none" value="${esc(it.text)}" oninput="S.questions.find(x=>x.id==='${q.id}').columnA[${i}].text=this.value"/>
+    </div>`).join('');
+    const colB=(q.columnB||[]).map((it,i)=>`<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+      <span style="width:20px;font-size:12px;font-weight:700;color:var(--green-d);flex-shrink:0">${esc(it.letter||String.fromCharCode(112+i))}</span>
+      <input style="border:1px solid var(--line);border-radius:7px;padding:6px 9px;flex:1;font-size:12px;outline:none" value="${esc(it.text)}" oninput="S.questions.find(x=>x.id==='${q.id}').columnB[${i}].text=this.value"/>
+    </div>`).join('');
+    const opts=(q.options||[]).map((opt,oi)=>`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">
+      <input type="radio" name="mc-${q.id}" ${q.correctOptionIndex===oi?'checked':''} onchange="S.questions.find(x=>x.id==='${q.id}').correctOptionIndex=${oi};render()"/>
+      <input style="border:1px solid ${q.correctOptionIndex===oi?'#6ee7b7':'var(--line)'};background:${q.correctOptionIndex===oi?'var(--green-l)':'#fff'};border-radius:7px;padding:5px 9px;flex:1;font-size:12px;outline:none" value="${esc(opt)}" oninput="S.questions.find(x=>x.id==='${q.id}').options[${oi}]=this.value"/>
+      ${q.correctOptionIndex===oi?'<span style="font-size:10px;font-weight:700;color:var(--green)">CORRECT</span>':''}
     </div>`).join('');
     return `<div class="q-card q-card-full">
       <div class="q-head">
         <div class="q-tag">Q${qi+1}<br/><span style="font-size:10px;color:var(--ink4)">Match</span></div>
-        <div style="flex:1;font-size:14px;font-weight:500;padding-top:4px;color:var(--ink)">Match the Following</div>
+        <textarea class="q-textarea" rows="1" style="font-size:13px" oninput="S.questions.find(x=>x.id==='${q.id}').question=this.value">${esc(q.question||'Match the columns')}</textarea>
         <button class="rm-btn" onclick="S.questions=S.questions.filter(x=>x.id!=='${q.id}');render()">${svg(SVGS.x)}</button>
       </div>
-      <div style="padding-left:26px">${pairs}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;padding-left:26px;margin-bottom:14px">
+        <div><div style="font-size:11px;font-weight:700;color:var(--blue-d);margin-bottom:8px">Column I</div>${colA}</div>
+        <div><div style="font-size:11px;font-weight:700;color:var(--green-d);margin-bottom:8px">Column II</div>${colB}</div>
+      </div>
+      <div style="padding-left:26px">
+        <div style="font-size:11px;font-weight:600;color:var(--ink3);margin-bottom:7px">Options (select correct one):</div>
+        ${opts}
+      </div>
     </div>`;
   }
 
