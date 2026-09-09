@@ -122,6 +122,25 @@ function handleFile(input){
     try{
       const d=JSON.parse(r.result);
       if(!d.questions||!Array.isArray(d.questions))throw new Error('No questions array found.');
+      // Normalise match questions (old format compatibility)
+      d.questions=d.questions.map(q=>{
+        if(q.kind!=='match')return q;
+        if(q.columnA&&q.columnB&&q.options)return q;
+        if(q.items&&q.items.length){
+          const lA=['A','B','C','D'],lB=['p','q','r','s'];
+          const items=q.items.slice(0,4);
+          const colA=items.map((it,i)=>({letter:lA[i],text:it.left||it.term||''}));
+          const colB=items.map((it,i)=>({letter:lB[i],text:it.right||it.definition||''}));
+          const correctOpt=colA.map((a,i)=>a.letter+'-'+colB[i].letter).join(', ');
+          const sh=[[0,2,1,3],[1,0,3,2],[2,3,0,1]];
+          const wrong=sh.map(o=>colA.map((a,i)=>a.letter+'-'+colB[o[i]].letter).join(', '));
+          const opts=[correctOpt,...wrong];
+          const ci=Math.floor(Math.random()*4);
+          [opts[0],opts[ci]]=[opts[ci],opts[0]];
+          return {...q,columnA:colA,columnB:colB,options:opts,correctOptionIndex:ci,question:q.question||'Match the columns'};
+        }
+        return q;
+      });
       S={quiz:d,answers:{},screen:'taking',error:null};render();
     }catch(e){S.error='Could not read file: '+e.message;render();}
   };
