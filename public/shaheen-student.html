@@ -94,12 +94,15 @@ textarea.ans-input{resize:vertical;min-height:90px}
 .result-card.correct{border-left-color:var(--green)}
 .result-card.incorrect{border-left-color:var(--red)}
 .result-card.pending{border-left-color:var(--ink4)}
-.result-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.result-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
 .result-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
 .result-tag.correct{background:var(--green-l);color:var(--green-d)}
 .result-tag.incorrect{background:var(--red-l);color:#991b1b}
 .result-tag.pending{background:var(--line2);color:var(--ink3)}
-.result-detail{font-size:12px;color:var(--ink3);margin-top:3px}
+.result-detail{font-size:12px;color:var(--ink3);margin-top:5px}
+.result-extra{font-size:12px;color:#991b1b;margin-top:5px;padding:7px 10px;background:var(--red-l);border-radius:8px;line-height:1.6}
+.result-card.correct .result-extra{color:var(--green-d);background:var(--green-l)}
+.result-card.pending .result-extra{color:var(--ink3);background:var(--line2)}
 </style>
 </head>
 <body>
@@ -230,31 +233,55 @@ function norm(s){return String(s||'').trim().toLowerCase();}
 function grade(q){
   const a=S.answers[q.id];
   if(q.kind==='mcq'){
-    if(a===undefined)return{status:'pending',detail:'Not answered'};
-    return{status:a===q.correctIndex?'correct':'incorrect',detail:'Correct: '+esc(q.options[q.correctIndex])};
+    if(a===undefined)return{status:'pending',detail:'Not answered',extra:''};
+    const correct=a===q.correctIndex;
+    return{status:correct?'correct':'incorrect',
+      detail:correct?'Your answer: '+esc(q.options[a]):'Your answer: '+esc(q.options[a]),
+      extra:correct?'':'Correct answer: '+esc(q.options[q.correctIndex])};
   }
   if(q.kind==='tf'){
-    if(a===undefined)return{status:'pending',detail:'Not answered'};
-    return{status:a===q.isTrue?'correct':'incorrect',detail:'Correct: '+(q.isTrue?'True':'False')};
+    if(a===undefined)return{status:'pending',detail:'Not answered',extra:''};
+    const correct=a===q.isTrue;
+    return{status:correct?'correct':'incorrect',
+      detail:'Your answer: '+(a?'True':'False'),
+      extra:correct?'':'Correct answer: '+(q.isTrue?'True':'False')};
   }
   if(q.kind==='fillblank'||q.kind==='oneword'){
-    if(!a)return{status:'pending',detail:'Not answered'};
-    return{status:norm(a)===norm(q.answer)?'correct':'incorrect',detail:'Correct: '+esc(q.answer)};
+    if(!a)return{status:'pending',detail:'Not answered',extra:''};
+    const correct=norm(a)===norm(q.answer);
+    return{status:correct?'correct':'incorrect',
+      detail:'Your answer: '+esc(a),
+      extra:correct?'':'Correct answer: '+esc(q.answer)};
   }
   if(q.kind==='spotmistake'){
-    if(!a||a.wrongIndex===undefined||!a.choice)return{status:'pending',detail:'Not completed'};
-    const ok=a.wrongIndex===q.wrongIndex&&norm(a.choice)===norm(q.correct);
-    return{status:ok?'correct':'incorrect',detail:'Wrong word: "'+esc(q.tokens[q.wrongIndex])+'" → "'+esc(q.correct)+'"'};
+    if(!a||a.wrongIndex===undefined||!a.choice)return{status:'pending',detail:'Not completed',extra:''};
+    const wordOk=a.wrongIndex===q.wrongIndex;
+    const choiceOk=norm(a.choice)===norm(q.correct);
+    const ok=wordOk&&choiceOk;
+    let detail='You picked: "'+esc(q.tokens[a.wrongIndex]||'?')+'" → "'+esc(a.choice||'?')+'"';
+    let extra=ok?'':'Correct: "'+esc(q.tokens[q.wrongIndex])+'" → "'+esc(q.correct)+'"';
+    if(!wordOk&&!choiceOk) extra='Wrong word and wrong replacement. '+extra;
+    else if(!wordOk) extra='Right replacement but wrong word identified. '+extra;
+    else if(!choiceOk) extra='Right word identified but wrong replacement. '+extra;
+    return{status:ok?'correct':'incorrect',detail,extra};
   }
   if(q.kind==='match'){
-    if(!a||!a.pairs)return{status:'pending',detail:'Not answered'};
-    let right=0;for(let i=0;i<q.items.length;i++)if(a.pairs[i]===i)right++;
-    return{status:right===q.items.length?'correct':right>0?'partial':'incorrect',detail:`${right}/${q.items.length} pairs correct`};
+    if(!a||!a.pairs)return{status:'pending',detail:'Not answered',extra:''};
+    const total=q.items.length;
+    let right=0;
+    const breakdown=[];
+    for(let i=0;i<total;i++){
+      const paired=a.pairs[i]===i;
+      if(paired)right++;
+      breakdown.push(`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0;font-size:12px"><span style="color:${paired?'var(--green-d)':'#991b1b'}">${paired?'✓':'✗'}</span> ${esc(q.items[i].left)} → ${a.pairs[i]!==undefined?esc(q.items[a.pairs[i]]?.right||'?'):'<em style=\"color:var(--ink4)\">not matched</em>'}</span>`);
+    }
+    const status=right===total?'correct':right>0?'partial':'incorrect';
+    return{status,detail:`${right}/${total} pairs correct`,extra:'<div style="margin-top:6px;line-height:1.8">'+breakdown.join('')+'</div>'+(right<total?'<div style="margin-top:6px;font-size:12px;color:var(--ink3)">Correct pairs: '+q.items.map((it,i)=>esc(it.left)+' → '+esc(it.right)).join(' &nbsp;|&nbsp; ')+'</div>':'')};
   }
   if(q.kind==='descriptive'){
-    return{status:'pending',detail:a?'Submitted — awaiting teacher review':'Not answered'};
+    return{status:'pending',detail:a?'Submitted — awaiting teacher review':'Not answered',extra:''};
   }
-  return{status:'pending',detail:''};
+  return{status:'pending',detail:'',extra:''};
 }
 
 function submitQuiz(){S.screen='results';render();window.scrollTo({top:0,behavior:'smooth'});}
@@ -304,15 +331,32 @@ function resultsScreen(){
   const correct=auto.filter(g=>g.r.status==='correct').length;
   const pct=auto.length?Math.round(correct/auto.length*100):0;
 
+  // get question prompt text for display
+  function qText(qq){
+    if(qq.kind==='mcq')return qq.question;
+    if(qq.kind==='tf')return qq.statement;
+    if(qq.kind==='fillblank')return qq.text;
+    if(qq.kind==='oneword')return qq.question;
+    if(qq.kind==='descriptive')return qq.question;
+    if(qq.kind==='spotmistake')return qq.tokens.join(' ');
+    if(qq.kind==='match')return 'Match the Following';
+    return '';
+  }
+
   const cards=graded.map(({q:qq,r},i)=>{
-    const lbl=r.status==='correct'?'Correct':r.status==='partial'?'Partial':r.status==='incorrect'?'Incorrect':'Pending';
+    const lbl=r.status==='correct'?'✓ Correct':r.status==='partial'?'◑ Partial':r.status==='incorrect'?'✗ Incorrect':'⏳ Pending';
     const cls=r.status==='correct'?'correct':r.status==='incorrect'||r.status==='partial'?'incorrect':'pending';
+    const tagCls=r.status==='correct'?'correct':r.status==='incorrect'||r.status==='partial'?'incorrect':'pending';
     return `<div class="result-card ${cls}">
       <div class="result-top">
-        <div style="font-size:13px;font-weight:600;color:var(--ink2)">Q${i+1} · ${esc(KIND_LABELS[qq.kind]||qq.kind)}</div>
-        <span class="result-tag ${cls}">${lbl}</span>
+        <div>
+          <div style="font-size:11px;color:var(--ink4);margin-bottom:2px">Q${i+1} · ${esc(KIND_LABELS[qq.kind]||qq.kind)}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink2);line-height:1.4">${esc(qText(qq))}</div>
+        </div>
+        <span class="result-tag ${tagCls}" style="white-space:nowrap;flex-shrink:0">${lbl}</span>
       </div>
       <div class="result-detail">${r.detail}</div>
+      ${r.extra?`<div class="result-extra">${r.extra}</div>`:''}
     </div>`;
   }).join('');
 
