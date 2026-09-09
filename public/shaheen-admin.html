@@ -258,13 +258,32 @@ async function generateQuestions(){
       if(t.id==='fillblank') return `${n} fill-in-the-blank questions (use _____ for the blank, provide answer)`;
       if(t.id==='oneword') return `${n} one-word/one-line questions (provide short answer)`;
       if(t.id==='spotmistake') return `${n} spot-the-mistake questions (tokens array of words, wrongIndex, correct replacement, choices array with 3 options including correct)`;
-      if(t.id==='match') return `${Math.ceil(n/3)} match-the-following question(s). Each must have:
-- "columnA": array of {letter:"A"|"B"|"C"|"D", text:"..."} (4 items)
-- "columnB": array of {letter:"p"|"q"|"r"|"s", text:"..."} (4 items)
-- "correctMapping": {"A":"p","B":"r","C":"q","D":"s"} (correct match for each)
-- "options": array of 4 strings, each a combination like "A-p, B-q, C-r, D-s". One must be correct.
-- "correctOptionIndex": 0-3 (index of correct option in options array)
-The 3 wrong options should have plausible but incorrect combinations.`;
+      if(t.id==='match') return `${Math.ceil(n/3)} Match the Following question(s) in MCQ format. For EACH question output EXACTLY this JSON structure (no deviation):
+{
+  "id": "q1",
+  "kind": "match",
+  "question": "Match the columns",
+  "columnA": [
+    {"letter":"A","text":"term 1"},
+    {"letter":"B","text":"term 2"},
+    {"letter":"C","text":"term 3"},
+    {"letter":"D","text":"term 4"}
+  ],
+  "columnB": [
+    {"letter":"p","text":"definition 1"},
+    {"letter":"q","text":"definition 2"},
+    {"letter":"r","text":"definition 3"},
+    {"letter":"s","text":"definition 4"}
+  ],
+  "options": [
+    "A-p, B-q, C-r, D-s",
+    "A-r, B-p, C-s, D-q",
+    "A-s, B-r, C-q, D-p",
+    "A-q, B-s, C-p, D-r"
+  ],
+  "correctOptionIndex": 0
+}
+Make sure columnA has exactly 4 items with letters A,B,C,D and columnB has exactly 4 items with letters p,q,r,s. The options array must have exactly 4 strings. correctOptionIndex must be 0,1,2, or 3.`;
       if(t.id==='descriptive') return `${n} descriptive questions`;
       return '';
     }).join('\n');
@@ -291,7 +310,33 @@ Generate exactly the numbers requested. Return only the JSON array.`});
 
     const raw=await callGemini(parts);
     const clean=raw.replace(/```json|```/g,'').trim();
-    S.questions=JSON.parse(clean);
+    const raw_questions=JSON.parse(clean);
+    // Normalise match questions: convert old items[] format to new columnA/columnB/options format
+    S.questions=raw_questions.map(q=>{
+      if(q.kind!=='match')return q;
+      // Already in new format
+      if(q.columnA&&q.columnB&&q.options)return q;
+      // Old items[] format — convert
+      if(q.items&&q.items.length){
+        const letters_A=['A','B','C','D'];
+        const letters_B=['p','q','r','s'];
+        const items=q.items.slice(0,4);
+        const colA=items.map((it,i)=>({letter:letters_A[i],text:it.left||it.term||''}));
+        const colB=items.map((it,i)=>({letter:letters_B[i],text:it.right||it.definition||''}));
+        // Correct option: A-p, B-q, C-r, D-s (sequential)
+        const correctOpt=colA.map((a,i)=>a.letter+'-'+colB[i].letter).join(', ');
+        // Generate 3 wrong options by shuffling
+        const shuffles=[[0,2,1,3],[1,0,3,2],[2,3,0,1]];
+        const wrongOpts=shuffles.map(order=>colA.map((a,i)=>a.letter+'-'+colB[order[i]].letter).join(', '));
+        const options=[correctOpt,...wrongOpts];
+        // Shuffle options so correct isn't always first
+        const ci=Math.floor(Math.random()*4);
+        const shuffledOpts=[...options];
+        [shuffledOpts[0],shuffledOpts[ci]]=[shuffledOpts[ci],shuffledOpts[0]];
+        return {...q,columnA:colA,columnB:colB,options:shuffledOpts,correctOptionIndex:ci,question:q.question||'Match the columns'};
+      }
+      return q;
+    });
     S.step=5; // review
   } catch(e){
     S.genError=e.message;
