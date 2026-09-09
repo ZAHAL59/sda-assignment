@@ -601,7 +601,7 @@ function qCardHTML(q,qi){
   </div>`;
 }
 
-function reviewHTML(){
+function questionReviewHTML(){
   const b=batch();
   const cards=S.questions.length===0
     ?`<div class="empty-card" style="grid-column:1/-1">No questions — remove all and start over.</div>`
@@ -714,7 +714,7 @@ function exportReviewedResult(){
 }
 
 
-function reviewHTML(){
+function studentResultReviewHTML(){
   const d=S.resultReview;
   const {scored,total}=calcFinalScore();
   const pct=total?Math.round(scored/total*100):0;
@@ -798,16 +798,22 @@ function reviewHTML(){
 
 // ── RENDER ────────────────────────────────────────────────────────────────
 function render(){
-  const showPanel = S.step>=1 && S.step<=4;
-  const showReview = S.step===5;
+  const showPanel    = S.step>=1 && S.step<=4;
+  const showQReview  = S.step===5;           // teacher reviewing AI-generated questions
+  const showSReview  = S.showReview && !!S.resultReview; // teacher reviewing student result
 
-  document.getElementById('content').className='content'+(showPanel&&!showReview?' dim':'');
-  if(S.showReview){
-    document.getElementById('content').innerHTML = reviewHTML();
+  // dim the background content when panel is open
+  document.getElementById('content').className='content'+(showPanel&&!showQReview&&!showSReview?' dim':'');
+
+  if(showSReview){
+    document.getElementById('content').innerHTML = studentResultReviewHTML();
+  } else if(showQReview){
+    document.getElementById('content').innerHTML = questionReviewHTML();
   } else {
-    document.getElementById('content').innerHTML = showReview ? reviewHTML() : listHTML();
+    document.getElementById('content').innerHTML = listHTML();
   }
-  document.getElementById('panel-wrap').innerHTML = (showPanel&&!S.showReview) ? panelHTML() : '';
+
+  document.getElementById('panel-wrap').innerHTML = (showPanel&&!showQReview&&!showSReview) ? panelHTML() : '';
 
   const t=document.getElementById('toast');
   if(S.toast){t.textContent=S.toast;t.classList.add('show');}
