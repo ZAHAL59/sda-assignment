@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/",        "destination": "/api/admin"   },
+    { "source": "/admin",   "destination": "/api/admin"   },
+    { "source": "/student", "destination": "/api/student" },
+    { "source": "/exam",    "destination": "/api/exam"    }
+  ]
+}
