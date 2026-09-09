@@ -179,7 +179,7 @@ const TYPES = [
   {id:'fillblank',label:'Fill in the Blank',sub:'Recall key terms',        icon:'✏'},
   {id:'oneword',label:'One-word / One-line',sub:'Fastest pulse check',     icon:'⚡'},
   {id:'spotmistake',label:'Spot the Mistake',sub:'Find the wrong word',    icon:'🔍'},
-  {id:'match', label:'Match the Following',sub:'Pair terms & definitions', icon:'🔗'},
+  {id:'match', label:'Match the Following',sub:'Pair terms & definitions (min 3 pairs)', icon:'🔗',min:3},
   {id:'descriptive',label:'Descriptive',sub:'Written answers',             icon:'📝'},
 ];
 
@@ -258,7 +258,7 @@ async function generateQuestions(){
       if(t.id==='fillblank') return `${n} fill-in-the-blank questions (use _____ for the blank, provide answer)`;
       if(t.id==='oneword') return `${n} one-word/one-line questions (provide short answer)`;
       if(t.id==='spotmistake') return `${n} spot-the-mistake questions (tokens array of words, wrongIndex, correct replacement, choices array with 3 options including correct)`;
-      if(t.id==='match') return `1 match-the-following set with ${n} pairs (items array of {left,right})`;
+      if(t.id==='match') return `1 match-the-following set with ${n} pairs minimum (items array of {left,right})`;
       if(t.id==='descriptive') return `${n} descriptive questions`;
       return '';
     }).join('\n');
@@ -569,9 +569,9 @@ function closePanel(){S.step=0;render();}
 function go(n){S.step=n;S.batchOpen=false;render();}
 function selBatch(id){S.batchId=id;S.batchOpen=false;render();}
 function syncStep2(){const btn=document.getElementById('btn-cont2');if(btn)btn.disabled=!canStep2();}
-function toggle(id){S.counts[id]=(S.counts[id]||0)>0?0:3;render();}
+function toggle(id){const t=TYPES.find(x=>x.id===id);const min=t&&t.min?t.min:3;S.counts[id]=(S.counts[id]||0)>0?0:min;render();}
 function inc(id){S.counts[id]=Math.min((S.counts[id]||0)+1,8);render();}
-function dec(id){S.counts[id]=Math.max((S.counts[id]||0)-1,0);render();}
+function dec(id){const t=TYPES.find(x=>x.id===id);const min=t&&t.min&&(S.counts[id]||0)>0?t.min:0;S.counts[id]=Math.max((S.counts[id]||0)-1,min);render();}
 function resetAll(){S.step=1;S.batchId=null;S.title='';S.description='';S.resourceB64=null;S.resourceMime=null;S.resourceName=null;S.notes='';S.showNotes=false;S.counts={};S.prompt='';S.questions=[];S.genError=null;render();}
 
 function publish(){
