@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Shaheen — Student Portal</title>
+<style>
+:root{
+  --ink:#0f172a;--ink2:#334155;--ink3:#64748b;--ink4:#94a3b8;
+  --line:#e2e8f0;--line2:#f1f5f9;--bg:#f8fafc;--white:#fff;
+  --blue:#3b82f6;--blue-d:#1d4ed8;--blue-l:#eff6ff;
+  --green:#10b981;--green-l:#ecfdf5;--green-d:#065f46;
+  --amber:#f59e0b;--amber-l:#fffbeb;
+  --red:#ef4444;--red-l:#fef2f2;
+  --radius:12px;--radius-lg:18px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+button,input,textarea{font-family:inherit}
+
+.wrap{max-width:820px;margin:0 auto;padding:32px 20px 80px}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.t-logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#14b8a6,#059669);color:#fff;font-weight:800;font-size:13px;display:flex;align-items:center;justify-content:center}
+.t-title{font-size:17px;font-weight:700;color:var(--ink)}
+.t-sub{font-size:12px;color:var(--ink4)}
+
+/* Import */
+.import-card{background:var(--white);border:1.5px dashed var(--line);border-radius:var(--radius-lg);padding:56px 32px;text-align:center}
+.import-card h2{font-size:19px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.import-card p{font-size:13px;color:var(--ink3);margin-bottom:24px;line-height:1.6}
+.file-label{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.file-label:hover{background:var(--blue-d)}
+input[type=file]{display:none}
+.err-box{background:var(--red-l);border:1px solid #fecaca;color:#b91c1c;border-radius:10px;padding:10px 14px;font-size:13px;margin-top:14px}
+
+/* Quiz header */
+.quiz-hdr{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:18px}
+.quiz-hdr h2{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:3px}
+.quiz-hdr-meta{font-size:13px;color:var(--ink4)}
+.quiz-hdr-desc{font-size:13px;color:var(--ink3);margin-top:7px;line-height:1.5}
+.prog-bar{height:5px;background:var(--line);border-radius:99px;margin-top:14px;overflow:hidden}
+.prog-fill{height:100%;background:var(--blue);border-radius:99px;transition:width .2s}
+
+/* Question cards */
+.q-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);padding:20px 22px;margin-bottom:14px}
+.q-num{font-size:11px;color:var(--ink4);margin-bottom:3px}
+.q-kind{font-size:10px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.q-prompt{font-size:15px;font-weight:600;color:var(--ink);line-height:1.55;margin-bottom:16px}
+
+/* Options */
+.opt-btn{width:100%;text-align:left;display:flex;align-items:center;gap:10px;border:1px solid var(--line);background:var(--white);border-radius:10px;padding:11px 13px;font-size:14px;color:var(--ink2);cursor:pointer;margin-bottom:8px}
+.opt-btn:hover{border-color:var(--ink4)}
+.opt-btn.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d);font-weight:500}
+.opt-letter{width:22px;height:22px;border-radius:50%;background:var(--line2);color:var(--ink4);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.opt-btn.sel .opt-letter{background:var(--blue);color:#fff}
+
+/* TF */
+.tf-row{display:flex;gap:10px}
+.tf-btn{flex:1;text-align:center;padding:13px;border-radius:10px;border:1px solid var(--line);background:var(--white);font-size:14px;font-weight:500;cursor:pointer}
+.tf-btn.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d)}
+
+/* Input */
+.ans-input{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px 13px;font-size:14px;outline:none;transition:border-color .15s}
+.ans-input:focus{border-color:#93c5fd;box-shadow:0 0 0 3px rgba(59,130,246,.12)}
+textarea.ans-input{resize:vertical;min-height:90px}
+
+/* Spot */
+.token-pill{display:inline-block;border:1px solid var(--line);background:var(--white);border-radius:7px;padding:6px 10px;font-size:14px;margin:3px;cursor:pointer}
+.token-pill.marked{border-color:var(--amber);background:var(--amber-l);color:#92400e;font-weight:600}
+.choice-row{display:flex;gap:9px;margin-top:12px;flex-wrap:wrap}
+.choice-btn{padding:9px 15px;border-radius:9px;border:1px solid var(--line);background:var(--white);font-size:13px;cursor:pointer}
+.choice-btn.sel{border-color:var(--blue);background:var(--blue-l);color:var(--blue-d);font-weight:500}
+
+/* Match */
+.match-grid{display:flex;gap:18px;margin-top:4px}
+.match-col{flex:1;display:flex;flex-direction:column;gap:7px}
+.match-item{border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:13px;cursor:pointer;background:var(--white);text-align:left}
+.match-item.pending{border-color:var(--blue);background:var(--blue-l)}
+.match-item.paired{border-color:var(--green);background:var(--green-l)}
+.pair-tag{font-size:10px;font-weight:700;color:#fff;background:var(--ink4);border-radius:99px;padding:1px 6px;margin-left:5px}
+
+/* Submit */
+.submit-bar{display:flex;justify-content:flex-end;margin-top:10px;gap:10px}
+.btn-primary{background:var(--blue);color:#fff;border:none;padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-primary:hover{background:var(--blue-d)}
+.btn-secondary{background:var(--white);color:var(--ink2);border:1px solid var(--line);padding:11px 24px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer}
+.btn-secondary:hover{background:var(--line2)}
+
+/* Results */
+.score-banner{background:linear-gradient(135deg,var(--blue-d),#0f766e);border-radius:var(--radius-lg);padding:28px 24px;text-align:center;color:#fff;margin-bottom:20px}
+.score-num{font-size:48px;font-weight:800;line-height:1}
+.score-label{font-size:13px;opacity:.75;margin-top:5px}
+.result-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--line);border-left:4px solid var(--line);padding:14px 18px;margin-bottom:10px}
+.result-card.correct{border-left-color:var(--green)}
+.result-card.incorrect{border-left-color:var(--red)}
+.result-card.pending{border-left-color:var(--ink4)}
+.result-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px}
+.result-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
+.result-tag.correct{background:var(--green-l);color:var(--green-d)}
+.result-tag.incorrect{background:var(--red-l);color:#991b1b}
+.result-tag.pending{background:var(--line2);color:var(--ink3)}
+.result-detail{font-size:12px;color:var(--ink3);margin-top:3px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const KIND_LABELS={mcq:'Multiple Choice',tf:'True / False',fillblank:'Fill in the Blank',oneword:'One-word / One-line',spotmistake:'Spot the Mistake',match:'Match the Following',descriptive:'Descriptive'};
+
+let S={quiz:null,answers:{},screen:'import',error:null};
+
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+
+// ── FILE IMPORT ───────────────────────────────────────────────────────────
+function handleFile(input){
+  const f=input.files&&input.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result);
+      if(!d.questions||!Array.isArray(d.questions))throw new Error('No questions array found.');
+      S={quiz:d,answers:{},screen:'taking',error:null};render();
+    }catch(e){S.error='Could not read file: '+e.message;render();}
+  };
+  r.onerror=()=>{S.error='Could not read file. Try again.';render();};
+  r.readAsText(f);
+}
+
+// ── ANSWER SETTERS ────────────────────────────────────────────────────────
+function setAns(id,v){S.answers[id]=v;render();}
+function setTextAns(id,v){S.answers[id]=v;}
+function spotToken(id,idx){S.answers[id]={wrongIndex:idx,choice:null};render();}
+function spotChoice(id,c){
+  const cur=S.answers[id]||{};
+  if(cur.wrongIndex===undefined||cur.wrongIndex===null)return;
+  S.answers[id]={...cur,choice:c};render();
+}
+function matchLeft(id,idx){
+  const cur=S.answers[id]||{pairs:{},pending:null};
+  if(cur.pairs[idx]!==undefined)return;
+  cur.pending=idx;S.answers[id]=cur;render();
+}
+function matchRight(id,idx){
+  const cur=S.answers[id]||{pairs:{},pending:null};
+  if(cur.pending===null||cur.pending===undefined)return;
+  if(Object.values(cur.pairs).includes(idx))return;
+  cur.pairs[cur.pending]=idx;cur.pending=null;S.answers[id]=cur;render();
+}
+function resetMatch(id){S.answers[id]={pairs:{},pending:null};render();}
+function setDiagram(id,idx,v){const cur=S.answers[id]||{};cur[idx]=v;S.answers[id]=cur;}
+
+// ── RENDER QUESTIONS ─────────────────────────────────────────────────────
+function shell(q,qi,prompt,body){
+  return `<div class="q-card">
+    <div class="q-num">Question ${qi+1}</div>
+    <div class="q-kind">${esc(KIND_LABELS[q.kind]||q.kind)}</div>
+    ${prompt?`<div class="q-prompt">${prompt}</div>`:'<div style="height:4px"></div>'}
+    ${body}
+  </div>`;
+}
+
+function rMCQ(q,qi){
+  const sel=S.answers[q.id];
+  const opts=q.options.map((o,oi)=>`<button class="opt-btn ${sel===oi?'sel':''}" onclick="setAns('${q.id}',${oi})">
+    <span class="opt-letter">${String.fromCharCode(65+oi)}</span><span>${esc(o)}</span></button>`).join('');
+  return shell(q,qi,esc(q.question),opts);
+}
+function rTF(q,qi){
+  const sel=S.answers[q.id];
+  return shell(q,qi,esc(q.statement),`<div class="tf-row">
+    <button class="tf-btn ${sel===true?'sel':''}" onclick="setAns('${q.id}',true)">True</button>
+    <button class="tf-btn ${sel===false?'sel':''}" onclick="setAns('${q.id}',false)">False</button>
+  </div>`);
+}
+function rFill(q,qi){
+  const v=S.answers[q.id]||'';
+  return shell(q,qi,esc(q.text),`<input class="ans-input" value="${esc(v)}" placeholder="Type your answer..." oninput="setTextAns('${q.id}',this.value)"/>`);
+}
+function rOneword(q,qi){
+  const v=S.answers[q.id]||'';
+  return shell(q,qi,esc(q.question),`<input class="ans-input" value="${esc(v)}" placeholder="Your answer..." oninput="setTextAns('${q.id}',this.value)"/>`);
+}
+function rDescriptive(q,qi){
+  const v=S.answers[q.id]||'';
+  return shell(q,qi,esc(q.question),`<textarea class="ans-input" rows="4" placeholder="Write your answer here..." oninput="setTextAns('${q.id}',this.value)">${esc(v)}</textarea>
+    <p style="font-size:12px;color:var(--ink4);margin-top:7px">Your teacher will read and grade this.</p>`);
+}
+function rSpot(q,qi){
+  const ans=S.answers[q.id]||{};
+  const pills=q.tokens.map((w,i)=>`<button class="token-pill ${ans.wrongIndex===i?'marked':''}" onclick="spotToken('${q.id}',${i})">${esc(w)}</button>`).join('');
+  let choices='';
+  if(ans.wrongIndex!==null&&ans.wrongIndex!==undefined){
+    const cs=q.choices&&q.choices.length?q.choices:[q.correct];
+    choices=`<div style="font-size:12px;color:var(--ink4);margin-top:12px;margin-bottom:6px">Pick the correct word:</div>
+      <div class="choice-row">${cs.map(c=>`<button class="choice-btn ${ans.choice===c?'sel':''}" onclick="spotChoice('${q.id}','${esc(c).replace(/'/g,"&#39;")}')">${esc(c)}</button>`).join('')}</div>`;
+  }
+  return shell(q,qi,null,`<div style="font-size:12px;color:var(--ink4);margin-bottom:8px">Step 1 — click the word that's wrong</div><div>${pills}</div>${choices}`);
+}
+function rMatch(q,qi){
+  const ans=S.answers[q.id]||{pairs:{},pending:null};
+  const leftH=q.items.map((it,i)=>{
+    const paired=ans.pairs[i]!==undefined;const pend=ans.pending===i;
+    return `<button class="match-item ${pend?'pending':''} ${paired?'paired':''}" onclick="matchLeft('${q.id}',${i})">${esc(it.left)}${paired?`<span class="pair-tag">${i+1}</span>`:''}</button>`;
+  }).join('');
+  const rightH=q.items.map((_,i)=>{
+    const used=Object.entries(ans.pairs).find(([,r])=>r===i);
+    return `<button class="match-item ${used?'paired':''}" onclick="matchRight('${q.id}',${i})">${esc(q.items[i].right)}${used?`<span class="pair-tag">${Number(used[0])+1}</span>`:''}</button>`;
+  }).join('');
+  const body=`<div style="font-size:12px;color:var(--ink4);margin-bottom:10px">Click a term on the left, then its match on the right.</div>
+    <div class="match-grid"><div class="match-col">${leftH}</div><div class="match-col">${rightH}</div></div>
+    <button class="btn-secondary" style="margin-top:10px;padding:7px 12px;font-size:12px" onclick="resetMatch('${q.id}')">Clear</button>`;
+  return shell(q,qi,'Match the Following',body);
+}
+
+function renderQ(q,qi){
+  switch(q.kind){
+    case 'mcq':return rMCQ(q,qi);
+    case 'tf':return rTF(q,qi);
+    case 'fillblank':return rFill(q,qi);
+    case 'oneword':return rOneword(q,qi);
+    case 'descriptive':return rDescriptive(q,qi);
+    case 'spotmistake':return rSpot(q,qi);
+    case 'match':return rMatch(q,qi);
+    default:return '';
+  }
+}
+
+// ── GRADING ───────────────────────────────────────────────────────────────
+function norm(s){return String(s||'').trim().toLowerCase();}
+function grade(q){
+  const a=S.answers[q.id];
+  if(q.kind==='mcq'){
+    if(a===undefined)return{status:'pending',detail:'Not answered'};
+    return{status:a===q.correctIndex?'correct':'incorrect',detail:'Correct: '+esc(q.options[q.correctIndex])};
+  }
+  if(q.kind==='tf'){
+    if(a===undefined)return{status:'pending',detail:'Not answered'};
+    return{status:a===q.isTrue?'correct':'incorrect',detail:'Correct: '+(q.isTrue?'True':'False')};
+  }
+  if(q.kind==='fillblank'||q.kind==='oneword'){
+    if(!a)return{status:'pending',detail:'Not answered'};
+    return{status:norm(a)===norm(q.answer)?'correct':'incorrect',detail:'Correct: '+esc(q.answer)};
+  }
+  if(q.kind==='spotmistake'){
+    if(!a||a.wrongIndex===undefined||!a.choice)return{status:'pending',detail:'Not completed'};
+    const ok=a.wrongIndex===q.wrongIndex&&norm(a.choice)===norm(q.correct);
+    return{status:ok?'correct':'incorrect',detail:'Wrong word: "'+esc(q.tokens[q.wrongIndex])+'" → "'+esc(q.correct)+'"'};
+  }
+  if(q.kind==='match'){
+    if(!a||!a.pairs)return{status:'pending',detail:'Not answered'};
+    let right=0;for(let i=0;i<q.items.length;i++)if(a.pairs[i]===i)right++;
+    return{status:right===q.items.length?'correct':right>0?'partial':'incorrect',detail:`${right}/${q.items.length} pairs correct`};
+  }
+  if(q.kind==='descriptive'){
+    return{status:'pending',detail:a?'Submitted — awaiting teacher review':'Not answered'};
+  }
+  return{status:'pending',detail:''};
+}
+
+function submitQuiz(){S.screen='results';render();window.scrollTo({top:0,behavior:'smooth'});}
+function retakeQuiz(){S.answers={};S.screen='taking';render();window.scrollTo({top:0,behavior:'smooth'});}
+function backToImport(){S={quiz:null,answers:{},screen:'import',error:null};render();}
+
+// ── SCREENS ───────────────────────────────────────────────────────────────
+function importScreen(){
+  return `<div class="import-card">
+    <h2>Load Your Assignment</h2>
+    <p>Ask your teacher for the assignment file (.json) and open it here to begin.</p>
+    <label class="file-label" for="fi">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Choose Assignment File
+    </label>
+    <input id="fi" type="file" accept="application/json,.json" onchange="handleFile(this)"/>
+    ${S.error?`<div class="err-box">${esc(S.error)}</div>`:''}
+  </div>`;
+}
+
+function takingScreen(){
+  const q=S.quiz;
+  const answered=q.questions.filter(qq=>{
+    const a=S.answers[qq.id];
+    if(qq.kind==='spotmistake')return a&&a.choice;
+    if(qq.kind==='match')return a&&a.pairs&&Object.keys(a.pairs).length===qq.items.length;
+    return a!==undefined&&a!=='';
+  }).length;
+  const pct=Math.round(answered/q.questions.length*100);
+
+  return `<div class="quiz-hdr">
+    <h2>${esc(q.title)}</h2>
+    <div class="quiz-hdr-meta">${q.questions.length} question${q.questions.length!==1?'s':''}</div>
+    ${q.description?`<div class="quiz-hdr-desc">${esc(q.description)}</div>`:''}
+    <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+  </div>
+  ${q.questions.map((qq,i)=>renderQ(qq,i)).join('')}
+  <div class="submit-bar">
+    <button class="btn-primary" onclick="submitQuiz()">Submit</button>
+  </div>`;
+}
+
+function resultsScreen(){
+  const q=S.quiz;
+  const graded=q.questions.map(qq=>({q:qq,r:grade(qq)}));
+  const auto=graded.filter(g=>g.q.kind!=='descriptive');
+  const correct=auto.filter(g=>g.r.status==='correct').length;
+  const pct=auto.length?Math.round(correct/auto.length*100):0;
+
+  const cards=graded.map(({q:qq,r},i)=>{
+    const lbl=r.status==='correct'?'Correct':r.status==='partial'?'Partial':r.status==='incorrect'?'Incorrect':'Pending';
+    const cls=r.status==='correct'?'correct':r.status==='incorrect'||r.status==='partial'?'incorrect':'pending';
+    return `<div class="result-card ${cls}">
+      <div class="result-top">
+        <div style="font-size:13px;font-weight:600;color:var(--ink2)">Q${i+1} · ${esc(KIND_LABELS[qq.kind]||qq.kind)}</div>
+        <span class="result-tag ${cls}">${lbl}</span>
+      </div>
+      <div class="result-detail">${r.detail}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="score-banner">
+    <div class="score-num">${correct} / ${auto.length}</div>
+    <div class="score-label">${pct}% correct${q.questions.length>auto.length?' · written answers sent to teacher':''}</div>
+  </div>
+  ${cards}
+  <div class="submit-bar">
+    <button class="btn-secondary" onclick="retakeQuiz()">Retake</button>
+    <button class="btn-primary" onclick="backToImport()">Load Another</button>
+  </div>`;
+}
+
+// ── ROOT RENDER ───────────────────────────────────────────────────────────
+function render(){
+  let body='';
+  if(S.screen==='import')body=importScreen();
+  else if(S.screen==='taking')body=takingScreen();
+  else body=resultsScreen();
+
+  document.getElementById('app').innerHTML=`<div class="wrap">
+    <div class="topbar">
+      <div class="t-logo">S</div>
+      <div><div class="t-title">Student Portal</div><div class="t-sub">${S.quiz?esc(S.quiz.title):'No assignment loaded'}</div></div>
+    </div>
+    ${body}
+  </div>`;
+}
+
+render();
+</script>
+</body>
+</html>
