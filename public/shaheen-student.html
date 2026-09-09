@@ -94,11 +94,13 @@ textarea.ans-input{resize:vertical;min-height:90px}
 .result-card.correct{border-left-color:var(--green)}
 .result-card.incorrect{border-left-color:var(--red)}
 .result-card.pending{border-left-color:var(--ink4)}
+.result-card.partial{border-left-color:var(--amber)}
 .result-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px}
 .result-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px}
 .result-tag.correct{background:var(--green-l);color:var(--green-d)}
 .result-tag.incorrect{background:var(--red-l);color:#991b1b}
 .result-tag.pending{background:var(--line2);color:var(--ink3)}
+.result-tag.partial{background:var(--amber-l);color:#92400e}
 .result-detail{font-size:12px;color:var(--ink3);margin-top:5px}
 .result-extra{font-size:12px;color:#991b1b;margin-top:5px;padding:7px 10px;background:var(--red-l);border-radius:8px;line-height:1.6}
 .result-card.correct .result-extra{color:var(--green-d);background:var(--green-l)}
@@ -255,7 +257,25 @@ function renderQ(q,qi){
 
 // ── GRADING ───────────────────────────────────────────────────────────────
 function norm(s){return String(s||'').trim().toLowerCase();}
+
+// Levenshtein distance — allows small typos
+function levenshtein(a,b){
+  const m=a.length,n=b.length;
+  const dp=Array.from({length:m+1},(_,i)=>Array.from({length:n+1},(_,j)=>i===0?j:j===0?i:0));
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)
+    dp[i][j]=a[i-1]===b[j-1]?dp[i-1][j-1]:1+Math.min(dp[i-1][j],dp[i][j-1],dp[i-1][j-1]);
+  return dp[m][n];
+}
+
+// Accept if distance <= 1 for short words, <= 2 for longer words
+function fuzzyMatch(student,correct){
+  const s=norm(student),c=norm(correct);
+  if(s===c)return true;
+  const maxDist=c.length<=4?0:c.length<=8?1:2;
+  return levenshtein(s,c)<=maxDist;
+}
 function grade(q){
+
   const a=S.answers[q.id];
   if(q.kind==='mcq'){
     if(a===undefined)return{status:'pending',detail:'Not answered',extra:''};
@@ -273,10 +293,11 @@ function grade(q){
   }
   if(q.kind==='fillblank'||q.kind==='oneword'){
     if(!a)return{status:'pending',detail:'Not answered',extra:''};
-    const correct=norm(a)===norm(q.answer);
-    return{status:correct?'correct':'incorrect',
+    const correct=fuzzyMatch(a,q.answer);
+    const near=!correct&&levenshtein(norm(a),norm(q.answer))<=2;
+    return{status:correct?'correct':near?'partial':'incorrect',
       detail:'Your answer: '+esc(a),
-      extra:correct?'':'Correct answer: '+esc(q.answer)};
+      extra:correct?'':(near?'Almost correct! ':'')+'Correct answer: '+esc(q.answer)};
   }
   if(q.kind==='spotmistake'){
     if(!a||a.wrongIndex===undefined||!a.choice)return{status:'pending',detail:'Not completed',extra:''};
@@ -308,6 +329,44 @@ function grade(q){
 function submitQuiz(){S.screen='results';render();window.scrollTo({top:0,behavior:'smooth'});}
 function retakeQuiz(){S.answers={};S.screen='taking';render();window.scrollTo({top:0,behavior:'smooth'});}
 function backToImport(){S={quiz:null,answers:{},screen:'import',error:null};render();}
+
+function exportResult(){
+  const q=S.quiz;
+  const graded=q.questions.map(qq=>{
+    const r=grade(qq);
+    const a=S.answers[qq.id];
+    let studentAnswerText='';
+    if(qq.kind==='mcq') studentAnswerText=a!==undefined?(qq.options||[])[a]||'':'Not answered';
+    else if(qq.kind==='tf') studentAnswerText=a===undefined?'Not answered':a?'True':'False';
+    else if(qq.kind==='fillblank'||qq.kind==='oneword') studentAnswerText=a||'Not answered';
+    else if(qq.kind==='descriptive') studentAnswerText=a||'Not answered';
+    else if(qq.kind==='spotmistake') studentAnswerText=a?'"'+(qq.tokens[a.wrongIndex]||'?')+'" → "'+a.choice+'"':'Not answered';
+    else if(qq.kind==='match') studentAnswerText=a!==undefined?(qq.options||[])[a]||'':'Not answered';
+    return {
+      questionId:qq.id, kind:qq.kind,
+      questionText:qq.question||qq.statement||qq.text||(qq.tokens||[]).join(' ')||'Match the columns',
+      studentAnswer:studentAnswerText,
+      autoStatus:r.status,
+      teacherOverride:null,
+      finalStatus:r.status,
+      question:qq,
+    };
+  });
+  const payload={
+    format:'shaheen-result-v1',
+    studentResult:true,
+    quizTitle:q.title,
+    submittedAt:new Date().toISOString(),
+    autoScore:graded.filter(g=>g.autoStatus==='correct'||g.autoStatus==='partial').length,
+    totalAuto:graded.filter(g=>g.kind!=='descriptive').length,
+    answers:graded,
+  };
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const slug=(q.title||'result').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
+  const link=document.createElement('a');link.href=url;link.download=slug+'_result.json';
+  document.body.appendChild(link);link.click();document.body.removeChild(link);URL.revokeObjectURL(url);
+}
 
 // ── SCREENS ───────────────────────────────────────────────────────────────
 function importScreen(){
@@ -349,7 +408,7 @@ function resultsScreen(){
   const q=S.quiz;
   const graded=q.questions.map(qq=>({q:qq,r:grade(qq)}));
   const auto=graded.filter(g=>g.q.kind!=='descriptive');
-  const correct=auto.filter(g=>g.r.status==='correct').length;
+  const correct=auto.filter(g=>g.r.status==='correct'||g.r.status==='partial').length;
   const pct=auto.length?Math.round(correct/auto.length*100):0;
 
   // get question prompt text for display
@@ -365,30 +424,69 @@ function resultsScreen(){
   }
 
   const cards=graded.map(({q:qq,r},i)=>{
-    const lbl=r.status==='correct'?'✓ Correct':r.status==='partial'?'◑ Partial':r.status==='incorrect'?'✗ Incorrect':'⏳ Pending';
-    const cls=r.status==='correct'?'correct':r.status==='incorrect'||r.status==='partial'?'incorrect':'pending';
-    const tagCls=r.status==='correct'?'correct':r.status==='incorrect'||r.status==='partial'?'incorrect':'pending';
+    const lbl=r.status==='correct'?'✓ Correct':r.status==='partial'?'◑ Almost':r.status==='incorrect'?'✗ Incorrect':'⏳ Pending';
+    const cls=r.status==='correct'?'correct':r.status==='partial'?'partial':r.status==='incorrect'?'incorrect':'pending';
+    const tagCls=cls;
+
+    // Build a readable question display
+    let questionDisplay='';
+    if(qq.kind==='mcq'){
+      questionDisplay=esc(qq.question)+'<div style="margin-top:6px;display:flex;flex-direction:column;gap:3px">'+
+        (qq.options||[]).map((o,oi)=>`<div style="font-size:12px;padding:3px 7px;border-radius:6px;background:${oi===qq.correctOptionIndex?'var(--green-l)':oi===S.answers[qq.id]&&oi!==qq.correctOptionIndex?'var(--red-l)':'var(--line2)'};color:${oi===qq.correctOptionIndex?'var(--green-d)':oi===S.answers[qq.id]&&oi!==qq.correctOptionIndex?'#991b1b':'var(--ink3)'}">
+          ${String.fromCharCode(65+oi)}. ${esc(o)} ${oi===qq.correctOptionIndex?'✓':''}
+        </div>`).join('')+'</div>';
+    } else if(qq.kind==='tf'){
+      questionDisplay=esc(qq.statement);
+    } else if(qq.kind==='fillblank'){
+      questionDisplay=esc(qq.text);
+    } else if(qq.kind==='oneword'){
+      questionDisplay=esc(qq.question);
+    } else if(qq.kind==='descriptive'){
+      questionDisplay=esc(qq.question);
+    } else if(qq.kind==='spotmistake'){
+      const ans=S.answers[qq.id]||{};
+      questionDisplay=(qq.tokens||[]).map((w,wi)=>`<span style="display:inline-block;margin:2px 2px;padding:3px 7px;border-radius:6px;font-size:13px;background:${wi===qq.wrongIndex?'var(--red-l)':wi===ans.wrongIndex&&wi!==qq.wrongIndex?'var(--amber-l)':'var(--line2)'};color:${wi===qq.wrongIndex?'#991b1b':'var(--ink2)'};">${esc(w)}</span>`).join(' ');
+    } else if(qq.kind==='match'){
+      questionDisplay='<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px">'+
+        '<div><div style="font-size:10px;font-weight:700;color:var(--blue-d);margin-bottom:5px">Column I</div>'+
+        (qq.columnA||[]).map(it=>`<div style="font-size:12px;color:var(--ink2);margin-bottom:3px"><b style="color:var(--blue-d)">(${esc(it.letter)})</b> ${esc(it.text)}</div>`).join('')+'</div>'+
+        '<div><div style="font-size:10px;font-weight:700;color:var(--green-d);margin-bottom:5px">Column II</div>'+
+        (qq.columnB||[]).map(it=>`<div style="font-size:12px;color:var(--ink2);margin-bottom:3px"><b style="color:var(--green-d)">(${esc(it.letter)})</b> ${esc(it.text)}</div>`).join('')+'</div></div>';
+    }
+
     return `<div class="result-card ${cls}">
       <div class="result-top">
-        <div>
-          <div style="font-size:11px;color:var(--ink4);margin-bottom:2px">Q${i+1} · ${esc(KIND_LABELS[qq.kind]||qq.kind)}</div>
-          <div style="font-size:13px;font-weight:600;color:var(--ink2);line-height:1.4">${esc(qText(qq))}</div>
+        <div style="flex:1">
+          <div style="font-size:11px;color:var(--ink4);margin-bottom:4px">Q${i+1} · ${esc(KIND_LABELS[qq.kind]||qq.kind)}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--ink);line-height:1.5">${questionDisplay}</div>
         </div>
-        <span class="result-tag ${tagCls}" style="white-space:nowrap;flex-shrink:0">${lbl}</span>
+        <span class="result-tag ${tagCls}" style="white-space:nowrap;flex-shrink:0;margin-left:10px">${lbl}</span>
       </div>
-      <div class="result-detail">${r.detail}</div>
+      ${r.detail?`<div class="result-detail" style="margin-top:8px">${r.detail}</div>`:''}
       ${r.extra?`<div class="result-extra">${r.extra}</div>`:''}
+
     </div>`;
   }).join('');
 
   return `<div class="score-banner">
     <div class="score-num">${correct} / ${auto.length}</div>
-    <div class="score-label">${pct}% correct${q.questions.length>auto.length?' · written answers sent to teacher':''}</div>
+    <div class="score-label">${pct}% correct (including near-correct answers)${q.questions.length>auto.length?' · written answers sent to teacher':''}</div>
   </div>
+
   ${cards}
-  <div class="submit-bar">
-    <button class="btn-secondary" onclick="retakeQuiz()">Retake</button>
-    <button class="btn-primary" onclick="backToImport()">Load Another</button>
+  <div class="submit-bar" style="flex-direction:column;align-items:flex-end;gap:10px">
+    <div style="background:var(--blue-l);border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;font-size:12px;color:var(--blue-d);width:100%;display:flex;align-items:center;gap:8px">
+      <span style="font-size:16px">📤</span>
+      <div>
+        <div style="font-weight:600">Share with your teacher</div>
+        <div style="color:var(--ink3)">Download your result file and send it to the teacher for review.</div>
+      </div>
+      <button class="btn-primary" style="flex-shrink:0;padding:8px 16px;font-size:13px" onclick="exportResult()">Download Result</button>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-secondary" onclick="retakeQuiz()">Retake</button>
+      <button class="btn-secondary" onclick="backToImport()">Load Another</button>
+    </div>
   </div>`;
 }
 
