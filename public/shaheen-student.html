@@ -138,18 +138,18 @@ function spotChoice(id,c){
   if(cur.wrongIndex===undefined||cur.wrongIndex===null)return;
   S.answers[id]={...cur,choice:c};render();
 }
-function matchLeft(id,idx){
+function matchLeft(id,idx){return;// legacy
   const cur=S.answers[id]||{pairs:{},pending:null};
   if(cur.pairs[idx]!==undefined)return;
   cur.pending=idx;S.answers[id]=cur;render();
 }
-function matchRight(id,idx){
+function matchRight(id,idx){return;// legacy
   const cur=S.answers[id]||{pairs:{},pending:null};
   if(cur.pending===null||cur.pending===undefined)return;
   if(Object.values(cur.pairs).includes(idx))return;
   cur.pairs[cur.pending]=idx;cur.pending=null;S.answers[id]=cur;render();
 }
-function resetMatch(id){S.answers[id]={pairs:{},pending:null};render();}
+function resetMatch(id){S.answers[id]=undefined;render();}
 function setDiagram(id,idx,v){const cur=S.answers[id]||{};cur[idx]=v;S.answers[id]=cur;}
 
 // ── RENDER QUESTIONS ─────────────────────────────────────────────────────
@@ -200,19 +200,25 @@ function rSpot(q,qi){
   return shell(q,qi,null,`<div style="font-size:12px;color:var(--ink4);margin-bottom:8px">Step 1 — click the word that's wrong</div><div>${pills}</div>${choices}`);
 }
 function rMatch(q,qi){
-  const ans=S.answers[q.id]||{pairs:{},pending:null};
-  const leftH=q.items.map((it,i)=>{
-    const paired=ans.pairs[i]!==undefined;const pend=ans.pending===i;
-    return `<button class="match-item ${pend?'pending':''} ${paired?'paired':''}" onclick="matchLeft('${q.id}',${i})">${esc(it.left)}${paired?`<span class="pair-tag">${i+1}</span>`:''}</button>`;
-  }).join('');
-  const rightH=q.items.map((_,i)=>{
-    const used=Object.entries(ans.pairs).find(([,r])=>r===i);
-    return `<button class="match-item ${used?'paired':''}" onclick="matchRight('${q.id}',${i})">${esc(q.items[i].right)}${used?`<span class="pair-tag">${Number(used[0])+1}</span>`:''}</button>`;
-  }).join('');
-  const body=`<div style="font-size:12px;color:var(--ink4);margin-bottom:10px">Click a term on the left, then its match on the right.</div>
-    <div class="match-grid"><div class="match-col">${leftH}</div><div class="match-col">${rightH}</div></div>
-    <button class="btn-secondary" style="margin-top:10px;padding:7px 12px;font-size:12px" onclick="resetMatch('${q.id}')">Clear</button>`;
-  return shell(q,qi,'Match the Following',body);
+  const sel=S.answers[q.id];
+  const colA=q.columnA||[];
+  const colB=q.columnB||[];
+  const opts=(q.options||[]).map((opt,oi)=>`<button class="opt-btn ${sel===oi?'sel':''}" onclick="setAns('${q.id}',${oi})">
+    <span class="opt-letter">${String.fromCharCode(49+oi)}</span><span>${esc(opt)}</span></button>`).join('');
+  const body=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px;background:var(--line2);border-radius:10px;padding:14px">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--blue-d);margin-bottom:8px;letter-spacing:.3px">Column I</div>
+        ${colA.map(it=>`<div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px;color:var(--ink2)"><span style="font-weight:700;color:var(--blue-d);flex-shrink:0">(${esc(it.letter)})</span><span>${esc(it.text)}</span></div>`).join('')}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--green-d);margin-bottom:8px;letter-spacing:.3px">Column II</div>
+        ${colB.map(it=>`<div style="display:flex;gap:8px;margin-bottom:7px;font-size:13px;color:var(--ink2)"><span style="font-weight:700;color:var(--green-d);flex-shrink:0">(${esc(it.letter)})</span><span>${esc(it.text)}</span></div>`).join('')}
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--ink4);margin-bottom:8px">Select the correct combination:</div>
+    ${opts}`;
+  return shell(q,qi,esc(q.question||'Match the columns'),body);
 }
 
 function renderQ(q,qi){
@@ -266,17 +272,13 @@ function grade(q){
     return{status:ok?'correct':'incorrect',detail,extra};
   }
   if(q.kind==='match'){
-    if(!a||!a.pairs)return{status:'pending',detail:'Not answered',extra:''};
-    const total=q.items.length;
-    let right=0;
-    const breakdown=[];
-    for(let i=0;i<total;i++){
-      const paired=a.pairs[i]===i;
-      if(paired)right++;
-      breakdown.push(`<span style="display:inline-flex;align-items:center;gap:4px;margin:2px 4px 2px 0;font-size:12px"><span style="color:${paired?'var(--green-d)':'#991b1b'}">${paired?'✓':'✗'}</span> ${esc(q.items[i].left)} → ${a.pairs[i]!==undefined?esc(q.items[a.pairs[i]]?.right||'?'):'<em style=\"color:var(--ink4)\">not matched</em>'}</span>`);
-    }
-    const status=right===total?'correct':right>0?'partial':'incorrect';
-    return{status,detail:`${right}/${total} pairs correct`,extra:'<div style="margin-top:6px;line-height:1.8">'+breakdown.join('')+'</div>'+(right<total?'<div style="margin-top:6px;font-size:12px;color:var(--ink3)">Correct pairs: '+q.items.map((it,i)=>esc(it.left)+' → '+esc(it.right)).join(' &nbsp;|&nbsp; ')+'</div>':'')};
+    if(a===undefined)return{status:'pending',detail:'Not answered',extra:''};
+    const correct=a===q.correctOptionIndex;
+    return{
+      status:correct?'correct':'incorrect',
+      detail:'Your answer: '+esc((q.options||[])[a]||'?'),
+      extra:correct?'':'Correct answer: '+esc((q.options||[])[q.correctOptionIndex]||'?')
+    };
   }
   if(q.kind==='descriptive'){
     return{status:'pending',detail:a?'Submitted — awaiting teacher review':'Not answered',extra:''};
